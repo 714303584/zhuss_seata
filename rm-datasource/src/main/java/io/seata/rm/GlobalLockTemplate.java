@@ -25,6 +25,8 @@ import io.seata.core.model.GlobalLockConfig;
  */
 public class GlobalLockTemplate {
 
+
+
     public Object execute(GlobalLockExecutor executor) throws Throwable {
         boolean alreadyInGlobalLock = RootContext.requireGlobalLock();
         if (!alreadyInGlobalLock) {

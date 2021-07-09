@@ -185,6 +185,9 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
     }
 
     private void initClient() {
+
+        LOGGER.info("ifreeshare -- initClient()");
+
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Initializing Global Transaction Clients ... ");
         }
@@ -192,11 +195,13 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
             throw new IllegalArgumentException(String.format("applicationId: %s, txServiceGroup: %s", applicationId, txServiceGroup));
         }
         //init TM
+        LOGGER.info("ifreeshare -- TMClient.init()");
         TMClient.init(applicationId, txServiceGroup, accessKey, secretKey);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Transaction Manager Client is initialized. applicationId[{}] txServiceGroup[{}]", applicationId, txServiceGroup);
         }
         //init RM
+        LOGGER.info("ifreeshare -- RMClient.init()");
         RMClient.init(applicationId, txServiceGroup);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Resource Manager is initialized. applicationId[{}] txServiceGroup[{}]", applicationId, txServiceGroup);
@@ -241,13 +246,20 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
     @Override
     protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
         try {
+
+            LOGGER.info("ifreeshare -- wrapIfNecessary(), bean-[{}], beanName-[{}], cacheKey-[{}]",
+                    bean.toString(),
+                    beanName,
+                    cacheKey);
             synchronized (PROXYED_SET) {
                 if (PROXYED_SET.contains(beanName)) {
                     return bean;
                 }
                 interceptor = null;
+                LOGGER.info("ifreeshare -- check tcc proxy");
                 //check TCC proxy
                 if (TCCBeanParserUtils.isTccAutoProxy(bean, beanName, applicationContext)) {
+
                     //TCC interceptor, proxy bean of sofa:reference/dubbo:reference, and LocalTCC
                     interceptor = new TccActionInterceptor(TCCBeanParserUtils.getRemotingDesc(beanName));
                     ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
@@ -275,6 +287,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
                     bean = super.wrapIfNecessary(bean, beanName, cacheKey);
                 } else {
                     AdvisedSupport advised = SpringProxyUtils.getAdvisedSupport(bean);
+                    LOGGER.info("ifreeshare -- buildAdvisors(), beanName-{}",beanName);
                     Advisor[] advisor = buildAdvisors(beanName, getAdvicesAndAdvisorsForBean(null, null, null));
                     for (Advisor avr : advisor) {
                         advised.addAdvisor(0, avr);
@@ -294,6 +307,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
                 if (clazz == null) {
                     continue;
                 }
+                LOGGER.info("clazz name"+clazz.getCanonicalName());
                 GlobalTransactional trxAnno = clazz.getAnnotation(GlobalTransactional.class);
                 if (trxAnno != null) {
                     return true;
@@ -327,6 +341,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
 
     @Override
     public void afterPropertiesSet() {
+        LOGGER.info("ifreeshare -- afterPropertiesSet()");
         if (disableGlobalTransaction) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Global transaction is disabled.");

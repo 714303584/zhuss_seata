@@ -16,6 +16,8 @@
 package io.seata.tm;
 
 import io.seata.core.rpc.netty.TmNettyRemotingClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The type Tm client.
@@ -24,6 +26,9 @@ import io.seata.core.rpc.netty.TmNettyRemotingClient;
  */
 public class TMClient {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TMClient.class);
+
+
     /**
      * Init.
      *
@@ -31,6 +36,7 @@ public class TMClient {
      * @param transactionServiceGroup the transaction service group
      */
     public static void init(String applicationId, String transactionServiceGroup) {
+        LOGGER.info("ifreeshare -- init TmClient.init()");
         init(applicationId, transactionServiceGroup, null, null);
     }
 
@@ -43,6 +49,8 @@ public class TMClient {
      * @param secretKey               the secret key
      */
     public static void init(String applicationId, String transactionServiceGroup, String accessKey, String secretKey) {
+        LOGGER.info("ifreeshare -- init TmClient.init(),applicationId-{},transactionServiceGroup-{},secretKey-{}",
+                applicationId,transactionServiceGroup,secretKey);
         TmNettyRemotingClient tmNettyRemotingClient = TmNettyRemotingClient.getInstance(applicationId, transactionServiceGroup, accessKey, secretKey);
         tmNettyRemotingClient.init();
     }

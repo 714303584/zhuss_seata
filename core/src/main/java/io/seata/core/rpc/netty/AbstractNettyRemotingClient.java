@@ -200,6 +200,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     @Override
     public void sendAsyncRequest(Channel channel, Object msg) {
+        LOGGER.info("AbstractNettyRemotingClient sendAsyncRequest");
         if (channel == null) {
             LOGGER.warn("sendAsyncRequest nothing, caused by null channel.");
             return;
@@ -215,6 +216,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     @Override
     public void sendAsyncResponse(String serverAddress, RpcMessage rpcMessage, Object msg) {
+        LOGGER.info("sendAsyncResponse");
         RpcMessage rpcMsg = buildResponseMessage(rpcMessage, msg, ProtocolConstants.MSGTYPE_RESPONSE);
         Channel channel = clientChannelManager.acquireChannel(serverAddress);
         super.sendAsync(channel, rpcMsg);
@@ -253,6 +255,8 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
     }
 
     private String loadBalance(String transactionServiceGroup, Object msg) {
+
+        LOGGER.info("AbstractNettyRemotingClient -- loadBalance");
         InetSocketAddress address = null;
         try {
             @SuppressWarnings("unchecked")

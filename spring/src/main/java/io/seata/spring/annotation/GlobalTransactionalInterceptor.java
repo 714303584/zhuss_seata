@@ -88,6 +88,8 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
     private static int defaultGlobalTransactionTimeout = 0;
 
     private void initDefaultGlobalTransactionTimeout() {
+        LOGGER.info("ifreeshare -- initDefaultGlobalTransactionTimeout timeout value:{}",
+                GlobalTransactionalInterceptor.defaultGlobalTransactionTimeout);
         if (GlobalTransactionalInterceptor.defaultGlobalTransactionTimeout <= 0) {
             int defaultGlobalTransactionTimeout;
             try {
@@ -115,12 +117,17 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
      *            the failure handler
      */
     public GlobalTransactionalInterceptor(FailureHandler failureHandler) {
+        LOGGER.info("ifreeshare -- FailureHandler:{}",failureHandler.toString());
         this.failureHandler = failureHandler == null ? DEFAULT_FAIL_HANDLER : failureHandler;
+
+        LOGGER.info("ifreeshare -- default_fail_handler:{}",DEFAULT_FAIL_HANDLER.toString());
         this.disable = ConfigurationFactory.getInstance().getBoolean(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
             DEFAULT_DISABLE_GLOBAL_TRANSACTION);
+        LOGGER.info("ifreeshare -- DISABLE_GLOBAL_TRANSACTION:{}",ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION);
         degradeCheck = ConfigurationFactory.getInstance().getBoolean(ConfigurationKeys.CLIENT_DEGRADE_CHECK,
             DEFAULT_TM_DEGRADE_CHECK);
         if (degradeCheck) {
+
             ConfigurationCache.addConfigListener(ConfigurationKeys.CLIENT_DEGRADE_CHECK, this);
             degradeCheckPeriod = ConfigurationFactory.getInstance().getInt(
                 ConfigurationKeys.CLIENT_DEGRADE_CHECK_PERIOD, DEFAULT_TM_DEGRADE_CHECK_PERIOD);
@@ -136,6 +143,8 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     @Override
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable {
+        LOGGER.info("ifreeshare -- invoke:{}",methodInvocation.toString());
+        LOGGER.info("ifreeshare -- globalTransaction is begin --");
         Class<?> targetClass =
             methodInvocation.getThis() != null ? AopUtils.getTargetClass(methodInvocation.getThis()) : null;
         Method specificMethod = ClassUtils.getMostSpecificMethod(methodInvocation.getMethod(), targetClass);
@@ -143,6 +152,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
             final Method method = BridgeMethodResolver.findBridgedMethod(specificMethod);
             final GlobalTransactional globalTransactionalAnnotation =
                 getAnnotation(method, targetClass, GlobalTransactional.class);
+            LOGGER.info("ifreeshare -- globalTransaction method:{}",method.toGenericString());
             final GlobalLock globalLockAnnotation = getAnnotation(method, targetClass, GlobalLock.class);
             boolean localDisable = disable || (degradeCheck && degradeNum >= degradeCheckAllowTimes);
             if (!localDisable) {
@@ -158,9 +168,17 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     Object handleGlobalLock(final MethodInvocation methodInvocation,
         final GlobalLock globalLockAnno) throws Throwable {
+        LOGGER.info("ifreeshare -- handleGlobalLock method:{},GlobalLock:{}",
+                methodInvocation.toString(),
+                globalLockAnno.toString()
+                );
         return globalLockTemplate.execute(new GlobalLockExecutor() {
             @Override
             public Object execute() throws Throwable {
+                LOGGER.info("ifreeshare -- GlobalLockExecutor.execute() method:{},GlobalLock:{}",
+                        methodInvocation.toString(),
+                        globalLockAnno.toString()
+                );
                 return methodInvocation.proceed();
             }
 
@@ -176,11 +194,17 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     Object handleGlobalTransaction(final MethodInvocation methodInvocation,
         final GlobalTransactional globalTrxAnno) throws Throwable {
+        LOGGER.info("ifreeshare -- GlobalLockExecutor.execute() MethodInvocation:{},GlobalTransactional:{}",
+                methodInvocation.toString(),
+                globalTrxAnno.toString()
+        );
+        LOGGER.info("ifreeshare -- handleGlobalTransaction -- start");
         boolean succeed = true;
         try {
             return transactionalTemplate.execute(new TransactionalExecutor() {
                 @Override
                 public Object execute() throws Throwable {
+                    LOGGER.info("ifreeshare -- MethodInvocation methodInvocation:{}"+methodInvocation.getMethod().getName());
                     return methodInvocation.proceed();
                 }
 
@@ -202,6 +226,8 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
                     TransactionInfo transactionInfo = new TransactionInfo();
                     transactionInfo.setTimeOut(timeout);
+                    LOGGER.info("ifreeshare -- TransactionInfo.getTransactionInfo -- Transaction name :{}", name());
+//                    System.out.println("TransactionInfo name:"+name());
                     transactionInfo.setName(name());
                     transactionInfo.setPropagation(globalTrxAnno.propagation());
                     transactionInfo.setLockRetryInternal(globalTrxAnno.lockRetryInternal());
@@ -249,7 +275,10 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
             if (degradeCheck) {
                 EVENT_BUS.post(new DegradeCheckEvent(succeed));
             }
+            LOGGER.info("ifreeshare -- handleGlobalTransaction -- end");
         }
+
+
     }
 
     public <T extends Annotation> T getAnnotation(Method method, Class<?> targetClass, Class<T> annotationClass) {
@@ -273,6 +302,10 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     @Override
     public void onChangeEvent(ConfigurationChangeEvent event) {
+        LOGGER.info("ifreeshare -- onChangeEvent:dataid-{},changeType-{},newValue-{}",
+                event.getDataId(),
+                event.getChangeType(),
+                event.getNewValue());
         if (ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION.equals(event.getDataId())) {
             LOGGER.info("{} config changed, old value:{}, new value:{}", ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
                 disable, event.getNewValue());
@@ -289,6 +322,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
      * auto upgrade service detection
      */
     private static void startDegradeCheck() {
+        LOGGER.info("ifreeshare -- startDegradeCheck");
         executor.scheduleAtFixedRate(() -> {
             if (degradeCheck) {
                 try {
@@ -304,6 +338,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     @Subscribe
     public static void onDegradeCheck(DegradeCheckEvent event) {
+        LOGGER.info("ifreeshare -- onDegradeCheck: DegradeCheckEvent:isRequestSuccess-{}",event.isRequestSuccess());
         if (event.isRequestSuccess()) {
             if (degradeNum >= degradeCheckAllowTimes) {
                 reachNum++;

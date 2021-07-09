@@ -31,15 +31,13 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  */
 public class TransactionPropagationInterceptor extends HandlerInterceptorAdapter {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionPropagationInterceptor.class);
-
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String xid = RootContext.getXID();
         String rpcXid = request.getHeader(RootContext.KEY_XID);
-
+        LOGGER.info("ifreeshare -- TransactionPropagationInterceptor.preHandler(), rpcXid-{}", rpcXid);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("xid in RootContext[{}] xid in HttpContext[{}]", xid, rpcXid);
         }
@@ -56,6 +54,7 @@ public class TransactionPropagationInterceptor extends HandlerInterceptorAdapter
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
         ModelAndView modelAndView) {
+        LOGGER.info("ifreeshare -- TransactionPropagationInterceptor.postHandle()");
         if (RootContext.inGlobalTransaction()) {
             XidResource.cleanXid(request.getHeader(RootContext.KEY_XID));
         }

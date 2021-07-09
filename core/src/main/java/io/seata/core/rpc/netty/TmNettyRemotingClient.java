@@ -245,10 +245,10 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
             digestSource = transactionServiceGroup + "," + ip + "," + timestamp;
         }
         String digest = signer.sign(digestSource, secretKey);
-        StringBuilder sb = new StringBuilder();
-        sb.append(RegisterTMRequest.UDATA_AK).append(EXTRA_DATA_KV_CHAR).append(accessKey).append(EXTRA_DATA_SPLIT_CHAR);
-        sb.append(RegisterTMRequest.UDATA_DIGEST).append(EXTRA_DATA_KV_CHAR).append(digest).append(EXTRA_DATA_SPLIT_CHAR);
-        sb.append(RegisterTMRequest.UDATA_TIMESTAMP).append(EXTRA_DATA_KV_CHAR).append(timestamp).append(EXTRA_DATA_SPLIT_CHAR);
-        return sb.toString();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(RegisterTMRequest.UDATA_AK).append(EXTRA_DATA_KV_CHAR).append(accessKey).append(EXTRA_DATA_SPLIT_CHAR);
+        stringBuilder.append(RegisterTMRequest.UDATA_DIGEST).append(EXTRA_DATA_KV_CHAR).append(digest).append(EXTRA_DATA_SPLIT_CHAR);
+        stringBuilder.append(RegisterTMRequest.UDATA_TIMESTAMP).append(EXTRA_DATA_KV_CHAR).append(timestamp).append(EXTRA_DATA_SPLIT_CHAR);
+        return stringBuilder.toString();
     }
 }

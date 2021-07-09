@@ -49,6 +49,7 @@ public class SeataAutoConfiguration {
     @DependsOn({BEAN_NAME_SPRING_APPLICATION_CONTEXT_PROVIDER, BEAN_NAME_FAILURE_HANDLER})
     @ConditionalOnMissingBean(GlobalTransactionScanner.class)
     public GlobalTransactionScanner globalTransactionScanner(SeataProperties seataProperties, FailureHandler failureHandler) {
+        LOGGER.info("ifreeshare -- globalTransactionScanner, SeataProperties-{}", seataProperties.toString());
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Automatically configure Seata");
         }
