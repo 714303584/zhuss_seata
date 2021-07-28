@@ -165,6 +165,10 @@ public abstract class AbstractNettyRemoting implements Disposable {
      * @throws TimeoutException
      */
     protected Object sendSync(Channel channel, RpcMessage rpcMessage, long timeoutMillis) throws TimeoutException {
+
+        LOGGER.info("ifreeshare -- AbstractNettyRemoting.sendSync(channel:{}, rpcMessage:{}, timeoutMillis:{})",
+                channel, rpcMessage, timeoutMillis);
+
         if (timeoutMillis <= 0) {
             throw new FrameworkException("timeout should more than 0ms");
         }
@@ -231,6 +235,8 @@ public abstract class AbstractNettyRemoting implements Disposable {
     }
 
     protected RpcMessage buildRequestMessage(Object msg, byte messageType) {
+        LOGGER.info("ifreeshare -- AbstractNettyRemoting.buildRequestMessage[msg:{}, messageType:{}]!",
+                msg, messageType);
         RpcMessage rpcMessage = new RpcMessage();
         rpcMessage.setId(getNextMessageId());
         rpcMessage.setMessageType(messageType);

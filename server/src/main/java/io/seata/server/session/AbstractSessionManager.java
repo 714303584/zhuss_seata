@@ -64,6 +64,7 @@ public abstract class AbstractSessionManager implements SessionManager, SessionL
 
     @Override
     public void addGlobalSession(GlobalSession session) throws TransactionException {
+        LOGGER.info("ifreeshare -- AbstractSessionManagert添加全局session方法 -- addGlobalSession");
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("MANAGER[" + name + "] SESSION[" + session + "] " + LogOperation.GLOBAL_ADD);
         }
@@ -114,6 +115,7 @@ public abstract class AbstractSessionManager implements SessionManager, SessionL
 
     @Override
     public void onBegin(GlobalSession globalSession) throws TransactionException {
+        LOGGER.info("ifreeshare -- AbstractSessionManager开启分布式事务 -- onBegin方法");
         addGlobalSession(globalSession);
     }
 
@@ -149,6 +151,8 @@ public abstract class AbstractSessionManager implements SessionManager, SessionL
     }
 
     private void writeSession(LogOperation logOperation, SessionStorable sessionStorable) throws TransactionException {
+
+        LOGGER.info("ifreeshare -- AbstractSessionManager写入session方法 -- writeSession(LogOperation logOperation, SessionStorable sessionStorable) ");
         if (!transactionStoreManager.writeSession(logOperation, sessionStorable)) {
             if (LogOperation.GLOBAL_ADD.equals(logOperation)) {
                 throw new GlobalTransactionException(TransactionExceptionCode.FailedWriteSession,

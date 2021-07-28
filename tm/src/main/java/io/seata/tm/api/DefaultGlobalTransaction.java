@@ -71,6 +71,8 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
      * @param role   the role
      */
     DefaultGlobalTransaction(String xid, GlobalStatus status, GlobalTransactionRole role) {
+        LOGGER.info("ifreeshare -- create default global transaction xid:{},status:{},role:{}",
+                xid, status,role);
         this.transactionManager = TransactionManagerHolder.get();
         this.xid = xid;
         this.status = status;
@@ -79,6 +81,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
     @Override
     public void begin() throws TransactionException {
+        LOGGER.info("ifreeshare -- begin global transaction!");
         begin(DEFAULT_GLOBAL_TX_TIMEOUT);
     }
 
@@ -89,6 +92,8 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
     @Override
     public void begin(int timeout, String name) throws TransactionException {
+        LOGGER.info("ifreeshare -- DefaultGlobalTransaction.begin() global transaction! timeout:{}, name:{}",
+                timeout, name);
         if (role != GlobalTransactionRole.Launcher) {
             assertXIDNotNull();
             if (LOGGER.isDebugEnabled()) {
@@ -98,6 +103,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         }
         assertXIDNull();
         String currentXid = RootContext.getXID();
+        LOGGER.info("ifreeshare -- begin global transaction! currentXid:{}", currentXid);
         if (currentXid != null) {
             throw new IllegalStateException("Global transaction already exists," +
                 " can't begin a new global transaction, currentXid = " + currentXid);
@@ -108,6 +114,8 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Begin new global transaction [{}]", xid);
         }
+
+        LOGGER.info("ifreeshare -- DefaultGlobalTransaction.begin() global transaction! currentXid:{}", currentXid);
     }
 
     @Override
@@ -146,6 +154,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
     @Override
     public void rollback() throws TransactionException {
+        LOGGER.info("ifreeshare -- DefaultGlobalTransaction.rollback() 全局事务回滚方法执行!");
         if (role == GlobalTransactionRole.Participant) {
             // Participant has no responsibility of rollback
             if (LOGGER.isDebugEnabled()) {
@@ -159,6 +168,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         try {
             while (retry > 0) {
                 try {
+                    LOGGER.info("ifreeshare -- DefaultGlobalTransaction.rollback() 全局事务回滚方法执行! xid:{}");
                     status = transactionManager.rollback(xid);
                     break;
                 } catch (Throwable ex) {

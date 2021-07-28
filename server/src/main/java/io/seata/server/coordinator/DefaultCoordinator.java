@@ -150,11 +150,14 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
     public DefaultCoordinator(RemotingServer remotingServer) {
         this.remotingServer = remotingServer;
         this.core = new DefaultCore(remotingServer);
+
+        LOGGER.info("ifreeshare -- remotingServer.class:{}", remotingServer.getClass());
     }
 
     @Override
     protected void doGlobalBegin(GlobalBeginRequest request, GlobalBeginResponse response, RpcContext rpcContext)
         throws TransactionException {
+        LOGGER.info("开启分布式式事务：request:{}",request.toString());
         response.setXid(core.begin(rpcContext.getApplicationId(), rpcContext.getTransactionServiceGroup(),
             request.getTransactionName(), request.getTimeout()));
         if (LOGGER.isInfoEnabled()) {

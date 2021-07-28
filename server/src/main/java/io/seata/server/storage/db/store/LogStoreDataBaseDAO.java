@@ -90,22 +90,32 @@ public class LogStoreDataBaseDAO implements LogStore {
      * @param logStoreDataSource the log store data source
      */
     public LogStoreDataBaseDAO(DataSource logStoreDataSource) {
+
+        LOGGER.info("ifreeshare -- 初始化数据库DAO -- LogStoreDataBaseDAO(DataSource logStoreDataSource)");
         this.logStoreDataSource = logStoreDataSource;
         globalTable = CONFIG.getConfig(ConfigurationKeys.STORE_DB_GLOBAL_TABLE,
             DEFAULT_STORE_DB_GLOBAL_TABLE);
+        LOGGER.info("ifreeshare -- 全局表名称：{}",globalTable);
         branchTable = CONFIG.getConfig(ConfigurationKeys.STORE_DB_BRANCH_TABLE,
             DEFAULT_STORE_DB_BRANCH_TABLE);
+        LOGGER.info("ifreeshare -- 分支表名称：{}",branchTable);
         dbType = CONFIG.getConfig(ConfigurationKeys.STORE_DB_TYPE);
+        LOGGER.info("ifreeshare -- 数据库类型：{}",dbType);
         if (StringUtils.isBlank(dbType)) {
             throw new StoreException("there must be db type.");
         }
         if (logStoreDataSource == null) {
             throw new StoreException("there must be logStoreDataSource.");
         }
-        // init transaction_name size
+        // 初始化事务名称的长度大小
         initTransactionNameSize();
     }
 
+    /**
+     * 根据Xid获取全局事务
+     * @param xid the xid
+     * @return
+     */
     @Override
     public GlobalTransactionDO queryGlobalTransactionDO(String xid) {
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getQueryGlobalTransactionSQL(globalTable);
@@ -187,6 +197,7 @@ public class LogStoreDataBaseDAO implements LogStore {
 
     @Override
     public boolean insertGlobalTransactionDO(GlobalTransactionDO globalTransactionDO) {
+        LOGGER.info("ifreeshare -- 插入全局事务（insertGlobalTransactionDO(GlobalTransactionDO globalTransactionDO)）：{} ", globalTransactionDO);
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getInsertGlobalTransactionSQL(globalTable);
         Connection conn = null;
         PreparedStatement ps = null;
@@ -216,6 +227,7 @@ public class LogStoreDataBaseDAO implements LogStore {
 
     @Override
     public boolean updateGlobalTransactionDO(GlobalTransactionDO globalTransactionDO) {
+        LOGGER.info("ifreeshare -- 更新全局事务（updateGlobalTransactionDO(GlobalTransactionDO globalTransactionDO)）：{} ", globalTransactionDO);
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getUpdateGlobalTransactionStatusSQL(globalTable);
         Connection conn = null;
         PreparedStatement ps = null;
@@ -235,6 +247,7 @@ public class LogStoreDataBaseDAO implements LogStore {
 
     @Override
     public boolean deleteGlobalTransactionDO(GlobalTransactionDO globalTransactionDO) {
+        LOGGER.info("ifreeshare -- 删除全局事务（deleteGlobalTransactionDO(GlobalTransactionDO globalTransactionDO)）：{} ", globalTransactionDO);
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getDeleteGlobalTransactionSQL(globalTable);
         Connection conn = null;
         PreparedStatement ps = null;
@@ -254,6 +267,7 @@ public class LogStoreDataBaseDAO implements LogStore {
 
     @Override
     public List<BranchTransactionDO> queryBranchTransactionDO(String xid) {
+        LOGGER.info("ifreeshare -- 查询全局事务（queryBranchTransactionDO(String xid)）：{} ", xid);
         List<BranchTransactionDO> rets = new ArrayList<>();
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getQueryBranchTransaction(branchTable);
         Connection conn = null;
@@ -280,6 +294,7 @@ public class LogStoreDataBaseDAO implements LogStore {
 
     @Override
     public List<BranchTransactionDO> queryBranchTransactionDO(List<String> xids) {
+        LOGGER.info("ifreeshare -- 查询全局事务（queryBranchTransactionDO(List<String> xids)）：{} ", xids);
         int length = xids.size();
         List<BranchTransactionDO> rets = new ArrayList<>(length * 3);
         String paramsPlaceHolder = org.apache.commons.lang.StringUtils.repeat("?", ",", length);
@@ -308,6 +323,7 @@ public class LogStoreDataBaseDAO implements LogStore {
 
     @Override
     public boolean insertBranchTransactionDO(BranchTransactionDO branchTransactionDO) {
+        LOGGER.info("ifreeshare -- 查询分支事务（insertBranchTransactionDO(BranchTransactionDO branchTransactionDO)）：{} ", branchTransactionDO);
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getInsertBranchTransactionSQL(branchTable);
         Connection conn = null;
         PreparedStatement ps = null;
@@ -442,12 +458,15 @@ public class LogStoreDataBaseDAO implements LogStore {
      * the public modifier only for test
      */
     public void initTransactionNameSize() {
+        LOGGER.info("ifreeshare -- 初始化事务名称大小 -- initTransactionNameSize()");
+        LOGGER.info("ifreeshare -- 初始化事务名称大小 -- 表名：{},列名：{}",globalTable, TRANSACTION_NAME_KEY);
         ColumnInfo columnInfo = queryTableStructure(globalTable, TRANSACTION_NAME_KEY);
         if (columnInfo == null) {
             LOGGER.warn("{} table or {} column not found", globalTable, TRANSACTION_NAME_KEY);
             return;
         }
         this.transactionNameColumnSize = columnInfo.getColumnSize();
+        LOGGER.info("ifreeshare -- 初始化事务名称大小 -- 事务名称长度：{}",this.transactionNameColumnSize);
     }
 
     /**
@@ -458,6 +477,7 @@ public class LogStoreDataBaseDAO implements LogStore {
      * @return the column info
      */
     private ColumnInfo queryTableStructure(final String tableName, String colName) {
+        LOGGER.info("ifreeshare -- 初始化事务名称大小 -- 查找列详情（queryTableStructure(final String tableName, String colName)） --表名：{},列名：{}",globalTable, TRANSACTION_NAME_KEY);
         try (Connection conn = logStoreDataSource.getConnection()) {
             DatabaseMetaData dbmd = conn.getMetaData();
             String schema = getSchema(conn);

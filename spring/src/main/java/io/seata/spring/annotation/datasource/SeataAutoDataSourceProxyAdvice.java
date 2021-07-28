@@ -23,8 +23,11 @@ import io.seata.core.model.BranchType;
 import io.seata.rm.datasource.DataSourceProxy;
 import io.seata.rm.datasource.SeataDataSourceProxy;
 import io.seata.rm.datasource.xa.DataSourceProxyXA;
+import io.seata.spring.annotation.GlobalTransactionalInterceptor;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.IntroductionInfo;
 import org.springframework.beans.BeanUtils;
 
@@ -33,14 +36,19 @@ import org.springframework.beans.BeanUtils;
  */
 public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, IntroductionInfo {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SeataAutoDataSourceProxyAdvice.class);
     private final BranchType dataSourceProxyMode;
     private final Class<? extends SeataDataSourceProxy> dataSourceProxyClazz;
 
     public SeataAutoDataSourceProxyAdvice(String dataSourceProxyMode) {
+
+        LOGGER.info("ifreeshare --- SeataAutoDataSourceProxyAdvice ");
         if (BranchType.AT.name().equalsIgnoreCase(dataSourceProxyMode)) {
+            LOGGER.info("ifreeshare --- SeataAutoDataSourceProxyAdvice BranchType.AT");
             this.dataSourceProxyMode = BranchType.AT;
             this.dataSourceProxyClazz = DataSourceProxy.class;
         } else if (BranchType.XA.name().equalsIgnoreCase(dataSourceProxyMode)) {
+            LOGGER.info("ifreeshare --- SeataAutoDataSourceProxyAdvice BranchType.XA");
             this.dataSourceProxyMode = BranchType.XA;
             this.dataSourceProxyClazz = DataSourceProxyXA.class;
         } else {
@@ -53,6 +61,8 @@ public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, Introd
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
+
+        LOGGER.info("ifreeshare --- SeataAutoDataSourceProxyAdvice.invoke:{}"+invocation);
         if (!RootContext.requireGlobalLock() && dataSourceProxyMode != RootContext.getBranchType()) {
             return invocation.proceed();
         }

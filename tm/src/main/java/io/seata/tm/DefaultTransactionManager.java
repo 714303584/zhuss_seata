@@ -51,9 +51,15 @@ public class DefaultTransactionManager implements TransactionManager {
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException {
+        LOGGER.info("默认事务管理器，开启事务方法");
+        LOGGER.info("ifreeshare -- DefaultTransactionManager.begin! applicationId:{},transactionServiceGrou:{}, name:{}, timeout:{}",
+                applicationId, transactionServiceGroup, name, timeout);
+        //全局开始请求
         GlobalBeginRequest request = new GlobalBeginRequest();
         request.setTransactionName(name);
         request.setTimeout(timeout);
+
+        LOGGER.info("发送开启事务请求");
         GlobalBeginResponse response = (GlobalBeginResponse) syncCall(request);
         if (response.getResultCode() == ResultCode.Failed) {
             throw new TmTransactionException(TransactionExceptionCode.BeginFailed, response.getMsg());
@@ -63,6 +69,7 @@ public class DefaultTransactionManager implements TransactionManager {
 
     @Override
     public GlobalStatus commit(String xid) throws TransactionException {
+        LOGGER.info("ifreeshare -- DefaultTransactionManager.commit(), 默认的事务管理器,xid:{}",xid);
         GlobalCommitRequest globalCommit = new GlobalCommitRequest();
         globalCommit.setXid(xid);
         GlobalCommitResponse response = (GlobalCommitResponse) syncCall(globalCommit);
@@ -96,7 +103,9 @@ public class DefaultTransactionManager implements TransactionManager {
 
     private AbstractTransactionResponse syncCall(AbstractTransactionRequest request) throws TransactionException {
         try {
-            LOGGER.info("TmNettyRemotingClient.getInstance():{}, request:{}",
+
+            LOGGER.info("发送请求：request.class:{}",request.getTypeCode());
+            LOGGER.info("ifreeshare -- TmNettyRemotingClient.syncCall(), 发送请求 request:{}",
                     TmNettyRemotingClient.getInstance().toString(),
                     request.toString());
             return (AbstractTransactionResponse) TmNettyRemotingClient.getInstance().sendSyncRequest(request);

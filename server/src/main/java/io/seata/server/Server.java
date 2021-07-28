@@ -51,8 +51,13 @@ public class Server {
         int port = PortHelper.getPort(args);
         System.setProperty(ConfigurationKeys.SERVER_PORT, Integer.toString(port));
 
+
+
         // create logger
         final Logger logger = LoggerFactory.getLogger(Server.class);
+
+
+        logger.info("server port:{}",Integer.toString(port));
         if (ContainerHelper.isRunningInContainer()) {
             logger.info("The server is running in container.");
         }

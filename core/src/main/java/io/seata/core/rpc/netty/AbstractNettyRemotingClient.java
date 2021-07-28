@@ -138,6 +138,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     @Override
     public Object sendSyncRequest(Object msg) throws TimeoutException {
+        LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.setdSyncRequest!, msg:{}", msg);
         String serverAddress = loadBalance(getTransactionServiceGroup(), msg);
         int timeoutMillis = NettyClientConfig.getRpcRequestTimeout();
         RpcMessage rpcMessage = buildRequestMessage(msg, ProtocolConstants.MSGTYPE_RESQUEST_SYNC);
@@ -200,7 +201,8 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     @Override
     public void sendAsyncRequest(Channel channel, Object msg) {
-        LOGGER.info("AbstractNettyRemotingClient sendAsyncRequest");
+        LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.sendAsyncRequest[channel:{}, msg:{}]",
+                channel, msg);
         if (channel == null) {
             LOGGER.warn("sendAsyncRequest nothing, caused by null channel.");
             return;
@@ -216,7 +218,8 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     @Override
     public void sendAsyncResponse(String serverAddress, RpcMessage rpcMessage, Object msg) {
-        LOGGER.info("sendAsyncResponse");
+        LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.sendAsyncResponse[serverAddress:{},rpcMessage:{},msg:{}]",
+                serverAddress, rpcMessage, msg);
         RpcMessage rpcMsg = buildResponseMessage(rpcMessage, msg, ProtocolConstants.MSGTYPE_RESPONSE);
         Channel channel = clientChannelManager.acquireChannel(serverAddress);
         super.sendAsync(channel, rpcMsg);
@@ -255,8 +258,8 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
     }
 
     private String loadBalance(String transactionServiceGroup, Object msg) {
-
-        LOGGER.info("AbstractNettyRemotingClient -- loadBalance");
+        LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.loadBalance[transactionServiceGroup:{}, msg:{}]",
+                transactionServiceGroup, msg);
         InetSocketAddress address = null;
         try {
             @SuppressWarnings("unchecked")
@@ -268,18 +271,28 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         if (address == null) {
             throw new FrameworkException(NoAvailableService);
         }
+        LOGGER.info("ifreeshare -- NetUtil.toStringAddress(address:{})-return:{}",address,NetUtil.toStringAddress(address));
         return NetUtil.toStringAddress(address);
     }
 
     private String getXid(Object msg) {
+        LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.getXid(msg:{})", msg);
         String xid = "";
         if (msg instanceof AbstractGlobalEndRequest) {
+            LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.getXid(msg:{}),messageType:AbstractGlobalEndRequest",
+                    msg);
             xid = ((AbstractGlobalEndRequest) msg).getXid();
         } else if (msg instanceof GlobalBeginRequest) {
+            LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.getXid(msg:{}),messageType:GlobalBeginRequest",
+                    msg);
             xid = ((GlobalBeginRequest) msg).getTransactionName();
         } else if (msg instanceof BranchRegisterRequest) {
+            LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.getXid(msg:{}),messageType:BranchRegisterRequest",
+                    msg);
             xid = ((BranchRegisterRequest) msg).getXid();
         } else if (msg instanceof BranchReportRequest) {
+            LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.getXid(msg:{}),messageType:BranchReportRequest",
+                    msg);
             xid = ((BranchReportRequest) msg).getXid();
         } else {
             try {

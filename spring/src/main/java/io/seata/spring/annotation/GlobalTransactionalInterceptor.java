@@ -322,7 +322,8 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
      * auto upgrade service detection
      */
     private static void startDegradeCheck() {
-        LOGGER.info("ifreeshare -- startDegradeCheck");
+        LOGGER.info("自动升级服务检测");
+        LOGGER.info("ifreeshare -- GlobalTransactionalInterceptor.startDegradeCheck()");
         executor.scheduleAtFixedRate(() -> {
             if (degradeCheck) {
                 try {
