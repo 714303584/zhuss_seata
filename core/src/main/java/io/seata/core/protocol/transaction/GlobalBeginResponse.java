@@ -69,4 +69,9 @@ public class GlobalBeginResponse extends AbstractTransactionResponse {
         return MessageType.TYPE_GLOBAL_BEGIN_RESULT;
     }
 
+    @Override
+    public String toString(){
+        return "xid:"+xid+"extraData:"+extraData;
+    }
+
 }

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 
+import com.alibaba.druid.support.json.JSONUtils;
 import io.seata.common.exception.DataAccessException;
 import io.seata.common.exception.StoreException;
 import io.seata.common.util.IOUtil;
@@ -119,6 +120,8 @@ public class LogStoreDataBaseDAO implements LogStore {
     @Override
     public GlobalTransactionDO queryGlobalTransactionDO(String xid) {
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getQueryGlobalTransactionSQL(globalTable);
+        LOGGER.info("ifreeshare -- 获取全局事务（queryGlobalTransactionDO(String xid)），数据库类型：{}，数据库名称：{}",dbType,globalTable);
+        LOGGER.info("ifreeshare -- 执行sql：{}，参数：{}", sql,xid);
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -140,9 +143,16 @@ public class LogStoreDataBaseDAO implements LogStore {
         }
     }
 
+    /**
+     * 根据transactionId获取全局事务
+     * @param transactionId the transaction id
+     * @return
+     */
     @Override
     public GlobalTransactionDO queryGlobalTransactionDO(long transactionId) {
         String sql = LogStoreSqlsFactory.getLogStoreSqls(dbType).getQueryGlobalTransactionSQLByTransactionId(globalTable);
+        LOGGER.info("ifreeshare -- 根据事务id（transactionId）获取全局事务（queryGlobalTransactionDO(long transactionId)）" +
+                "sql：{}, transactionId:{}",sql,transactionId);
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -421,7 +431,14 @@ public class LogStoreDataBaseDAO implements LogStore {
         return max;
     }
 
+    /**
+     * 实体转换 全局事务数据库 -> 全局事务实体
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     private GlobalTransactionDO convertGlobalTransactionDO(ResultSet rs) throws SQLException {
+        LOGGER.info("ifreeshare -- 转换数据库数据为全局事务实体（convertGlobalTransactionDO(ResultSet rs)）：{}", rs);
         GlobalTransactionDO globalTransactionDO = new GlobalTransactionDO();
         globalTransactionDO.setXid(rs.getString(ServerTableColumnsName.GLOBAL_TABLE_XID));
         globalTransactionDO.setStatus(rs.getInt(ServerTableColumnsName.GLOBAL_TABLE_STATUS));
@@ -435,10 +452,19 @@ public class LogStoreDataBaseDAO implements LogStore {
         globalTransactionDO.setApplicationData(rs.getString(ServerTableColumnsName.GLOBAL_TABLE_APPLICATION_DATA));
         globalTransactionDO.setGmtCreate(rs.getTimestamp(ServerTableColumnsName.GLOBAL_TABLE_GMT_CREATE));
         globalTransactionDO.setGmtModified(rs.getTimestamp(ServerTableColumnsName.GLOBAL_TABLE_GMT_MODIFIED));
+        LOGGER.info("ifreeshare -- 转换数据库数据为全局事务实体（convertGlobalTransactionDO(ResultSet rs)）GlobalTransactionDo：{}",
+                JSONUtils.toJSONString(globalTransactionDO));
         return globalTransactionDO;
     }
 
+    /**
+     * 实体转换  分支事务数据库 -> 分支事务实体
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     private BranchTransactionDO convertBranchTransactionDO(ResultSet rs) throws SQLException {
+        LOGGER.info("ifreeshare -- 转换数据库数据为分支事务实体（convertBranchTransactionDO(ResultSet rs)）：{}", rs);
         BranchTransactionDO branchTransactionDO = new BranchTransactionDO();
         branchTransactionDO.setResourceGroupId(rs.getString(ServerTableColumnsName.BRANCH_TABLE_RESOURCE_GROUP_ID));
         branchTransactionDO.setStatus(rs.getInt(ServerTableColumnsName.BRANCH_TABLE_STATUS));
@@ -451,6 +477,8 @@ public class LogStoreDataBaseDAO implements LogStore {
         branchTransactionDO.setTransactionId(rs.getLong(ServerTableColumnsName.BRANCH_TABLE_TRANSACTION_ID));
         branchTransactionDO.setGmtCreate(rs.getTimestamp(ServerTableColumnsName.BRANCH_TABLE_GMT_CREATE));
         branchTransactionDO.setGmtModified(rs.getTimestamp(ServerTableColumnsName.BRANCH_TABLE_GMT_MODIFIED));
+        LOGGER.info("ifreeshare -- 转换数据库数据为全局事务实体（convertBranchTransactionDO(ResultSet rs)）GlobalTransactionDo：{}",
+                JSONUtils.toJSONString(branchTransactionDO));
         return branchTransactionDO;
     }
 

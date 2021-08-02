@@ -51,16 +51,17 @@ public class DefaultTransactionManager implements TransactionManager {
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException {
-        LOGGER.info("默认事务管理器，开启事务方法");
+        LOGGER.info("ifreeshare -- 默认事务管理器，开启事务方法");
         LOGGER.info("ifreeshare -- DefaultTransactionManager.begin! applicationId:{},transactionServiceGrou:{}, name:{}, timeout:{}",
                 applicationId, transactionServiceGroup, name, timeout);
         //全局开始请求
         GlobalBeginRequest request = new GlobalBeginRequest();
         request.setTransactionName(name);
         request.setTimeout(timeout);
-
+        LOGGER.info("ifreeshare -- 事务开启实体(GlobalBeginRequest):{}",request.toString());
         LOGGER.info("发送开启事务请求");
         GlobalBeginResponse response = (GlobalBeginResponse) syncCall(request);
+        LOGGER.info("ifreeshare -- 事务开启返回(GlobalBeginResponse):{}",response.toString());
         if (response.getResultCode() == ResultCode.Failed) {
             throw new TmTransactionException(TransactionExceptionCode.BeginFailed, response.getMsg());
         }
@@ -72,7 +73,9 @@ public class DefaultTransactionManager implements TransactionManager {
         LOGGER.info("ifreeshare -- DefaultTransactionManager.commit(), 默认的事务管理器,xid:{}",xid);
         GlobalCommitRequest globalCommit = new GlobalCommitRequest();
         globalCommit.setXid(xid);
+        LOGGER.info("ifreeshare -- 事务提交请求(GlobalCommitRequest):{}", globalCommit.toString());
         GlobalCommitResponse response = (GlobalCommitResponse) syncCall(globalCommit);
+        LOGGER.info("ifreeshare -- 事务提交请求(GlobalCommitResponse):{}", response.toString());
         return response.getGlobalStatus();
     }
 
@@ -80,7 +83,9 @@ public class DefaultTransactionManager implements TransactionManager {
     public GlobalStatus rollback(String xid) throws TransactionException {
         GlobalRollbackRequest globalRollback = new GlobalRollbackRequest();
         globalRollback.setXid(xid);
+        LOGGER.info("ifreeshare -- 事务回滚请求(GlobalRollbackRequest):{}", globalRollback.toString());
         GlobalRollbackResponse response = (GlobalRollbackResponse) syncCall(globalRollback);
+        LOGGER.info("ifreeshare -- 事务回滚请求(GlobalRollbackResponse):{}", response.toString());
         return response.getGlobalStatus();
     }
 
@@ -88,7 +93,9 @@ public class DefaultTransactionManager implements TransactionManager {
     public GlobalStatus getStatus(String xid) throws TransactionException {
         GlobalStatusRequest queryGlobalStatus = new GlobalStatusRequest();
         queryGlobalStatus.setXid(xid);
+        LOGGER.info("ifreeshare -- 事务状态查询(GlobalStatusRequest):{}", queryGlobalStatus.toString());
         GlobalStatusResponse response = (GlobalStatusResponse) syncCall(queryGlobalStatus);
+        LOGGER.info("ifreeshare -- 事务状态查询(GlobalStatusRequest):{}", response.toString());
         return response.getGlobalStatus();
     }
 
@@ -97,7 +104,9 @@ public class DefaultTransactionManager implements TransactionManager {
         GlobalReportRequest globalReport = new GlobalReportRequest();
         globalReport.setXid(xid);
         globalReport.setGlobalStatus(globalStatus);
+        LOGGER.info("ifreeshare -- 事务上报请求(GlobalReportRequest):{}",globalReport.toString());
         GlobalReportResponse response = (GlobalReportResponse) syncCall(globalReport);
+        LOGGER.info("ifreeshare -- 事务上报请求(GlobalReportResponse):{}", response.toString());
         return response.getGlobalStatus();
     }
 
