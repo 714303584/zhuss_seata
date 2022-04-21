@@ -104,6 +104,11 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
     private NettyClientChannelManager clientChannelManager;
     private final NettyPoolKey.TransactionRole transactionRole;
     private ExecutorService mergeSendExecutorService;
+
+
+    /**
+     * 事务消息处理器
+     */
     private TransactionMessageHandler transactionMessageHandler;
 
     @Override
@@ -218,7 +223,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     @Override
     public void sendAsyncResponse(String serverAddress, RpcMessage rpcMessage, Object msg) {
-        LOGGER.info("ifreeshare -- AbstractNettyRemotingClient.sendAsyncResponse[serverAddress:{},rpcMessage:{},msg:{}]",
+        LOGGER.info("AbstractNettyRemotingClient.sendAsyncResponse[serverAddress:{},rpcMessage:{},msg:{}]",
                 serverAddress, rpcMessage, msg);
         RpcMessage rpcMsg = buildResponseMessage(rpcMessage, msg, ProtocolConstants.MSGTYPE_RESPONSE);
         Channel channel = clientChannelManager.acquireChannel(serverAddress);

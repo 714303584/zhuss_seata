@@ -28,6 +28,8 @@ import io.seata.core.model.BranchStatus;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.Resource;
 import io.seata.core.model.ResourceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * default resource manager, adapt all resource managers
@@ -35,6 +37,8 @@ import io.seata.core.model.ResourceManager;
  * @author zhangsen
  */
 public class DefaultResourceManager implements ResourceManager {
+
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DefaultResourceManager.class);
 
     /**
      * all resource managers
@@ -70,6 +74,7 @@ public class DefaultResourceManager implements ResourceManager {
         List<ResourceManager> allResourceManagers = EnhancedServiceLoader.loadAll(ResourceManager.class);
         if (CollectionUtils.isNotEmpty(allResourceManagers)) {
             for (ResourceManager rm : allResourceManagers) {
+                LOGGER.info("ifreeshare -- RM初始化(ResourceManager):{}", rm.toString());
                 resourceManagers.put(rm.getBranchType(), rm);
             }
         }
@@ -79,6 +84,9 @@ public class DefaultResourceManager implements ResourceManager {
     public BranchStatus branchCommit(BranchType branchType, String xid, long branchId,
                                      String resourceId, String applicationData)
         throws TransactionException {
+
+        LOGGER.info("ifreeshare -- 分支事务提交（RM.branchCommit({},{},{},{},{})）",
+                branchType,xid,branchId,resourceId,applicationData);
         return getResourceManager(branchType).branchCommit(branchType, xid, branchId, resourceId, applicationData);
     }
 

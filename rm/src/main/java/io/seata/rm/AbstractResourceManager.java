@@ -63,8 +63,9 @@ public abstract class AbstractResourceManager implements ResourceManager {
             request.setResourceId(resourceId);
             request.setBranchType(branchType);
             request.setApplicationData(applicationData);
-
+            LOGGER.info("ifreeshare -- 分支事务注册(BranchRegisterRequest):{}", request.toString());
             BranchRegisterResponse response = (BranchRegisterResponse) RmNettyRemotingClient.getInstance().sendSyncRequest(request);
+            LOGGER.info("ifreeshare -- 分支事务返回(BranchRegisterResponse):{}",response.toString());
             if (response.getResultCode() == ResultCode.Failed) {
                 throw new RmTransactionException(response.getTransactionExceptionCode(), String.format("Response[ %s ]", response.getMsg()));
             }
@@ -94,8 +95,9 @@ public abstract class AbstractResourceManager implements ResourceManager {
             request.setBranchId(branchId);
             request.setStatus(status);
             request.setApplicationData(applicationData);
-
+            LOGGER.info("ifreeshare -- 分支事务上报(BranchReportRequest):{}", request.toString());
             BranchReportResponse response = (BranchReportResponse) RmNettyRemotingClient.getInstance().sendSyncRequest(request);
+            LOGGER.info("ifreeshare -- 分支事务上报返回(BranchReportResponse):{}", response.toString());
             if (response.getResultCode() == ResultCode.Failed) {
                 throw new RmTransactionException(response.getTransactionExceptionCode(), String.format("Response[ %s ]", response.getMsg()));
             }

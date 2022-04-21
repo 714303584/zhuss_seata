@@ -23,6 +23,7 @@ package io.seata.core.protocol;
 public interface MessageType {
 
     /**
+     * 111
      * The constant TYPE_GLOBAL_BEGIN.
      */
     short TYPE_GLOBAL_BEGIN = 1;
@@ -36,6 +37,7 @@ public interface MessageType {
     short TYPE_GLOBAL_COMMIT = 7;
     /**
      * The constant TYPE_GLOBAL_COMMIT_RESULT.
+     * 0001
      */
     short TYPE_GLOBAL_COMMIT_RESULT = 8;
     /**

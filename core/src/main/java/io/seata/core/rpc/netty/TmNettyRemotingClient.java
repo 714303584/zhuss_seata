@@ -45,7 +45,9 @@ import static io.seata.core.constants.ConfigurationKeys.SEATA_ACCESS_KEY;
 import static io.seata.core.constants.ConfigurationKeys.SEATA_SECRET_KEY;
 
 /**
- * The rm netty client.
+ * The tm netty client.
+ *
+ * 事务管理器netty客户端 -- 使用此TmNettyRemotingClient连接seata的服务
  *
  * @author slievrly
  * @author zhaojun
@@ -53,11 +55,16 @@ import static io.seata.core.constants.ConfigurationKeys.SEATA_SECRET_KEY;
  */
 
 public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
+
+    //tm logger
     private static final Logger LOGGER = LoggerFactory.getLogger(TmNettyRemotingClient.class);
+
+    //单例模式 instance
     private static volatile TmNettyRemotingClient instance;
     private static final long KEEP_ALIVE_TIME = Integer.MAX_VALUE;
     private static final int MAX_QUEUE_SIZE = 2000;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
+    //applicationId
     private String applicationId;
     private String transactionServiceGroup;
     private final AuthSigner signer;
@@ -68,8 +75,10 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
     private TmNettyRemotingClient(NettyClientConfig nettyClientConfig,
                                   EventExecutorGroup eventExecutorGroup,
                                   ThreadPoolExecutor messageExecutor) {
+
         super(nettyClientConfig, eventExecutorGroup, messageExecutor, NettyPoolKey.TransactionRole.TMROLE);
         this.signer = EnhancedServiceLoader.load(AuthSigner.class);
+        LOGGER.info("事务管理器的NETTY客户端构造函数");
     }
 
     /**
@@ -188,9 +197,7 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
                                      AbstractMessage requestMessage) {
         RegisterTMRequest registerTMRequest = (RegisterTMRequest) requestMessage;
         RegisterTMResponse registerTMResponse = (RegisterTMResponse) response;
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("register TM success. client version:{}, server version:{},channel:{}", registerTMRequest.getVersion(), registerTMResponse.getVersion(), channel);
-        }
+        LOGGER.info("seataTM客户端注册TM到Seata服务成功. client version:{}, server version:{},channel:{}", registerTMRequest.getVersion(), registerTMResponse.getVersion(), channel);
         getClientChannelManager().registerChannel(serverAddress, channel);
     }
 
@@ -223,6 +230,7 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
         // 1.registry TC response processor
         ClientOnResponseProcessor onResponseProcessor =
                 new ClientOnResponseProcessor(mergeMsgMap, super.getFutures(), getTransactionMessageHandler());
+        LOGGER.info("注册请求处理消息");
         super.registerProcessor(MessageType.TYPE_SEATA_MERGE_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_GLOBAL_BEGIN_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_GLOBAL_COMMIT_RESULT, onResponseProcessor, null);

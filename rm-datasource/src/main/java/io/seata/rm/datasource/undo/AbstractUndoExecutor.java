@@ -155,6 +155,8 @@ public abstract class AbstractUndoExecutor {
      */
     protected void undoPrepare(PreparedStatement undoPST, ArrayList<Field> undoValues, List<Field> pkValueList)
             throws SQLException {
+
+        LOGGER.info("虚拟undolog执行者的undoPrepar方法");
         int undoIndex = 0;
         for (Field undoValue : undoValues) {
             undoIndex++;
@@ -222,6 +224,7 @@ public abstract class AbstractUndoExecutor {
      * @throws SQLException the sql exception such as has dirty data
      */
     protected boolean dataValidationAndGoOn(Connection conn) throws SQLException {
+
 
         TableRecords beforeRecords = sqlUndoLog.getBeforeImage();
         TableRecords afterRecords = sqlUndoLog.getAfterImage();

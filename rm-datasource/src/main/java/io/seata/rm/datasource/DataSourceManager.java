@@ -57,6 +57,7 @@ public class DataSourceManager extends AbstractResourceManager {
         request.setXid(xid);
         request.setLockKey(lockKeys);
         request.setResourceId(resourceId);
+        LOGGER.info("ifreeshare -- DataSourceManager.lockQuery(branchType:{}, resourceId:{}, xid:{})",branchType,resourceId,xid);
         try {
             GlobalLockQueryResponse response;
             if (RootContext.inGlobalTransaction() || RootContext.requireGlobalLock()) {
@@ -108,17 +109,22 @@ public class DataSourceManager extends AbstractResourceManager {
     @Override
     public BranchStatus branchCommit(BranchType branchType, String xid, long branchId, String resourceId,
                                      String applicationData) throws TransactionException {
+        LOGGER.info("ifreeshare -- (DataSourceManager.branchCommit(branchType:{}, xid:{}, branchId:{}))",
+                branchType,xid,branchId);
         return asyncWorker.branchCommit(xid, branchId, resourceId);
     }
 
     @Override
     public BranchStatus branchRollback(BranchType branchType, String xid, long branchId, String resourceId,
                                        String applicationData) throws TransactionException {
+
         DataSourceProxy dataSourceProxy = get(resourceId);
         if (dataSourceProxy == null) {
             throw new ShouldNeverHappenException();
         }
         try {
+            LOGGER.info("ifreeshare -- (数据源管理事务回滚.branchRollback(branchType:{},xid:{},branchId:{}))",
+                    branchType,xid,branchId);
             UndoLogManagerFactory.getUndoLogManager(dataSourceProxy.getDbType()).undo(dataSourceProxy, xid, branchId);
         } catch (TransactionException te) {
             StackTraceLogger.info(LOGGER, te,

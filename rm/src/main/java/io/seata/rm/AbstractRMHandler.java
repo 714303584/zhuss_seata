@@ -46,6 +46,8 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
 
     @Override
     public BranchCommitResponse handle(BranchCommitRequest request) {
+        LOGGER.info("ifreeshare -- 虚拟RMHandler(AbstractRMHandler.handle(BranchCommitRequest request)):{}",
+                request.toString());
         BranchCommitResponse response = new BranchCommitResponse();
         exceptionHandleTemplate(new AbstractCallback<BranchCommitRequest, BranchCommitResponse>() {
             @Override
@@ -115,6 +117,8 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
      */
     protected void doBranchRollback(BranchRollbackRequest request, BranchRollbackResponse response)
         throws TransactionException {
+
+        LOGGER.info("ifreeshare -- 开始分支事务回滚（doBranchRollback），分支事务ID：{}", request.getBranchId());
         String xid = request.getXid();
         long branchId = request.getBranchId();
         String resourceId = request.getResourceId();
@@ -122,7 +126,8 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Branch Rollbacking: " + xid + " " + branchId + " " + resourceId);
         }
-        BranchStatus status = getResourceManager().branchRollback(request.getBranchType(), xid, branchId, resourceId,
+        BranchStatus status = getResourceManager()
+                .branchRollback(request.getBranchType(), xid, branchId, resourceId,
             applicationData);
         response.setXid(xid);
         response.setBranchId(branchId);

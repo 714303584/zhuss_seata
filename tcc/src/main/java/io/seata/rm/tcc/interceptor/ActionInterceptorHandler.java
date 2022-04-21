@@ -61,16 +61,20 @@ public class ActionInterceptorHandler {
 
         //TCC name
         String actionName = businessAction.name();
+        //声明业务操作上下文
         BusinessActionContext actionContext = new BusinessActionContext();
+        //设置XId
         actionContext.setXid(xid);
         //set action name
         actionContext.setActionName(actionName);
 
+        LOGGER.info("执行TCC分布式事务拦截。TCC分布式事务上下文：{}",actionContext.toString());
         //Creating Branch Record
         String branchId = doTccActionLogStore(method, arguments, businessAction, actionContext);
         actionContext.setBranchId(branchId);
         //MDC put branchId
         MDC.put(RootContext.MDC_KEY_BRANCH_ID, branchId);
+
 
         //set the parameter whose type is BusinessActionContext
         Class<?>[] types = method.getParameterTypes();
@@ -118,6 +122,8 @@ public class ActionInterceptorHandler {
         String applicationContextStr = JSON.toJSONString(applicationContext);
         try {
             //registry branch record
+            //使用RM注册分支事务
+            LOGGER.info("使用RM注册TCC分支事务");
             Long branchId = DefaultResourceManager.get().branchRegister(BranchType.TCC, actionName, null, xid,
                 applicationContextStr, null);
             return String.valueOf(branchId);

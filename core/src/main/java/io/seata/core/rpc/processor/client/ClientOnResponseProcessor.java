@@ -90,6 +90,12 @@ public class ClientOnResponseProcessor implements RemotingProcessor {
 
     @Override
     public void process(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
+
+        if(rpcMessage != null){
+            byte messageType = rpcMessage.getMessageType();
+            LOGGER.info("处理rpc请求消息：message：{}, messageType:{}",rpcMessage, messageType);
+        }
+
         if (rpcMessage.getBody() instanceof MergeResultMessage) {
             MergeResultMessage results = (MergeResultMessage) rpcMessage.getBody();
             MergedWarpMessage mergeMessage = (MergedWarpMessage) mergeMsgMap.remove(rpcMessage.getId());

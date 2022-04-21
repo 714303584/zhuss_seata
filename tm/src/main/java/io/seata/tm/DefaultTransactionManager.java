@@ -51,17 +51,17 @@ public class DefaultTransactionManager implements TransactionManager {
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException {
-        LOGGER.info("ifreeshare -- 默认事务管理器，开启事务方法");
-        LOGGER.info("ifreeshare -- DefaultTransactionManager.begin! applicationId:{},transactionServiceGrou:{}, name:{}, timeout:{}",
+        LOGGER.info(" 默认事务管理器，开启事务方法");
+        LOGGER.info("DefaultTransactionManager.begin! applicationId:{},transactionServiceGrou:{}, name:{}, timeout:{}",
                 applicationId, transactionServiceGroup, name, timeout);
         //全局开始请求
         GlobalBeginRequest request = new GlobalBeginRequest();
         request.setTransactionName(name);
         request.setTimeout(timeout);
-        LOGGER.info("ifreeshare -- 事务开启实体(GlobalBeginRequest):{}",request.toString());
+        LOGGER.info("事务开启实体(GlobalBeginRequest):{}",request.toString());
         LOGGER.info("发送开启事务请求");
         GlobalBeginResponse response = (GlobalBeginResponse) syncCall(request);
-        LOGGER.info("ifreeshare -- 事务开启返回(GlobalBeginResponse):{}",response.toString());
+        LOGGER.info("事务开启返回(GlobalBeginResponse):{}",response.toString());
         if (response.getResultCode() == ResultCode.Failed) {
             throw new TmTransactionException(TransactionExceptionCode.BeginFailed, response.getMsg());
         }
@@ -70,12 +70,12 @@ public class DefaultTransactionManager implements TransactionManager {
 
     @Override
     public GlobalStatus commit(String xid) throws TransactionException {
-        LOGGER.info("ifreeshare -- DefaultTransactionManager.commit(), 默认的事务管理器,xid:{}",xid);
+        LOGGER.info("默认的事务管理器,xid:{}",xid);
         GlobalCommitRequest globalCommit = new GlobalCommitRequest();
         globalCommit.setXid(xid);
-        LOGGER.info("ifreeshare -- 事务提交请求(GlobalCommitRequest):{}", globalCommit.toString());
+        LOGGER.info("事务提交请求(GlobalCommitRequest):{}", globalCommit.toString());
         GlobalCommitResponse response = (GlobalCommitResponse) syncCall(globalCommit);
-        LOGGER.info("ifreeshare -- 事务提交请求(GlobalCommitResponse):{}", response.toString());
+        LOGGER.info("事务提交请求(GlobalCommitResponse):{}", response.toString());
         return response.getGlobalStatus();
     }
 
@@ -104,18 +104,16 @@ public class DefaultTransactionManager implements TransactionManager {
         GlobalReportRequest globalReport = new GlobalReportRequest();
         globalReport.setXid(xid);
         globalReport.setGlobalStatus(globalStatus);
-        LOGGER.info("ifreeshare -- 事务上报请求(GlobalReportRequest):{}",globalReport.toString());
+        LOGGER.info(" 事务上报请求(GlobalReportRequest):{}",globalReport.toString());
         GlobalReportResponse response = (GlobalReportResponse) syncCall(globalReport);
-        LOGGER.info("ifreeshare -- 事务上报请求(GlobalReportResponse):{}", response.toString());
+        LOGGER.info("事务上报请求(GlobalReportResponse):{}", response.toString());
         return response.getGlobalStatus();
     }
 
     private AbstractTransactionResponse syncCall(AbstractTransactionRequest request) throws TransactionException {
         try {
-
             LOGGER.info("发送请求：request.class:{}",request.getTypeCode());
-            LOGGER.info("ifreeshare -- TmNettyRemotingClient.syncCall(), 发送请求 request:{}",
-                    TmNettyRemotingClient.getInstance().toString(),
+            LOGGER.info("请求发送, 发送请求 request:{}",
                     request.toString());
             return (AbstractTransactionResponse) TmNettyRemotingClient.getInstance().sendSyncRequest(request);
         } catch (TimeoutException toe) {

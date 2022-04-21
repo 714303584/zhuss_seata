@@ -119,6 +119,7 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
         rpcMessage.setCompressor(compressorType);
         rpcMessage.setMessageType(messageType);
 
+
         // direct read head with zero-copy
         int headMapLength = headLength - ProtocolConstants.V1_HEAD_LENGTH;
         if (headMapLength > 0) {

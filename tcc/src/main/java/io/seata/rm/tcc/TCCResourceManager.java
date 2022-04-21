@@ -95,7 +95,7 @@ public class TCCResourceManager extends AbstractResourceManager {
             BusinessActionContext businessActionContext = getBusinessActionContext(xid, branchId, resourceId,
                 applicationData);
             Object ret = commitMethod.invoke(targetTCCBean, businessActionContext);
-            LOGGER.info("TCC resource commit result : {}, xid: {}, branchId: {}, resourceId: {}", ret, xid, branchId, resourceId);
+            LOGGER.info("TCC 分布式事务提交结果: {}, xid: {}, branchId: {}, resourceId: {}", ret, xid, branchId, resourceId);
             boolean result;
             if (ret != null) {
                 if (ret instanceof TwoPhaseResult) {
@@ -142,7 +142,7 @@ public class TCCResourceManager extends AbstractResourceManager {
             BusinessActionContext businessActionContext = getBusinessActionContext(xid, branchId, resourceId,
                 applicationData);
             Object ret = rollbackMethod.invoke(targetTCCBean, businessActionContext);
-            LOGGER.info("TCC resource rollback result : {}, xid: {}, branchId: {}, resourceId: {}", ret, xid, branchId, resourceId);
+            LOGGER.info("TCC 分布式事务回滚结果 : {}, xid: {}, branchId: {}, resourceId: {}", ret, xid, branchId, resourceId);
             boolean result;
             if (ret != null) {
                 if (ret instanceof TwoPhaseResult) {

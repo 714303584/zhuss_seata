@@ -36,7 +36,7 @@ public class TMClient {
      * @param transactionServiceGroup the transaction service group
      */
     public static void init(String applicationId, String transactionServiceGroup) {
-        LOGGER.info("ifreeshare -- init TmClient.init()");
+        LOGGER.info("初始化事务管理器客户端 TmClient.init()");
         init(applicationId, transactionServiceGroup, null, null);
     }
 
@@ -49,7 +49,7 @@ public class TMClient {
      * @param secretKey               the secret key
      */
     public static void init(String applicationId, String transactionServiceGroup, String accessKey, String secretKey) {
-        LOGGER.info("ifreeshare -- init TmClient.init(),applicationId-{},transactionServiceGroup-{},secretKey-{}",
+        LOGGER.info("初始化事务管理器客户端 TmClient.init(),applicationId-{},transactionServiceGroup-{},secretKey-{}",
                 applicationId,transactionServiceGroup,secretKey);
         TmNettyRemotingClient tmNettyRemotingClient = TmNettyRemotingClient.getInstance(applicationId, transactionServiceGroup, accessKey, secretKey);
         tmNettyRemotingClient.init();

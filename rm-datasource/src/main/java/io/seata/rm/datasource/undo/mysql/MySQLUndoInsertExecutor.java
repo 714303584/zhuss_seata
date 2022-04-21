@@ -30,6 +30,8 @@ import io.seata.rm.datasource.sql.struct.TableRecords;
 import io.seata.rm.datasource.undo.AbstractUndoExecutor;
 import io.seata.rm.datasource.undo.SQLUndoLog;
 import io.seata.sqlparser.util.JdbcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The type My sql undo insert executor.
@@ -42,6 +44,12 @@ public class MySQLUndoInsertExecutor extends AbstractUndoExecutor {
      * DELETE FROM a WHERE pk = ?
      */
     private static final String DELETE_SQL_TEMPLATE = "DELETE FROM %s WHERE %s ";
+
+
+    /**
+     * Logger for AbstractUndoExecutor
+     **/
+    private static final Logger LOGGER = LoggerFactory.getLogger(MySQLUndoDeleteExecutor.class);
 
     /**
      * Undo Inset.
@@ -72,6 +80,7 @@ public class MySQLUndoInsertExecutor extends AbstractUndoExecutor {
         List<String> pkNameList = getOrderedPkList(afterImage, rows.get(0), JdbcConstants.MYSQL).stream().map(
             e -> e.getName()).collect(Collectors.toList());
         String whereSql = SqlGenerateUtils.buildWhereConditionByPKs(pkNameList, JdbcConstants.MYSQL);
+        LOGGER.info("构建插入Undo表的undoSQL：{}", String.format(DELETE_SQL_TEMPLATE, sqlUndoLog.getTableName(), whereSql));
         return String.format(DELETE_SQL_TEMPLATE, sqlUndoLog.getTableName(), whereSql);
     }
 

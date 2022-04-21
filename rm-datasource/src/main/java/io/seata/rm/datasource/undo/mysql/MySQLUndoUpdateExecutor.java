@@ -28,6 +28,8 @@ import io.seata.rm.datasource.sql.struct.TableRecords;
 import io.seata.rm.datasource.undo.AbstractUndoExecutor;
 import io.seata.rm.datasource.undo.SQLUndoLog;
 import io.seata.sqlparser.util.JdbcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The type My sql undo update executor.
@@ -35,6 +37,13 @@ import io.seata.sqlparser.util.JdbcConstants;
  * @author sharajava
  */
 public class MySQLUndoUpdateExecutor extends AbstractUndoExecutor {
+
+    /**
+     * Logger for AbstractUndoExecutor
+     **/
+    private static final Logger LOGGER = LoggerFactory.getLogger(MySQLUndoDeleteExecutor.class);
+
+
 
     /**
      * UPDATE a SET x = ?, y = ?, z = ? WHERE pk1 in (?) pk2 in (?)
@@ -65,6 +74,8 @@ public class MySQLUndoUpdateExecutor extends AbstractUndoExecutor {
         List<String> pkNameList = getOrderedPkList(beforeImage, row, JdbcConstants.MYSQL).stream().map(e -> e.getName())
             .collect(Collectors.toList());
         String whereSql = SqlGenerateUtils.buildWhereConditionByPKs(pkNameList, JdbcConstants.MYSQL);
+
+        LOGGER.info("构建更新Undo表的undoSQL：{}", String.format(UPDATE_SQL_TEMPLATE, sqlUndoLog.getTableName(), updateColumns, whereSql));
 
         return String.format(UPDATE_SQL_TEMPLATE, sqlUndoLog.getTableName(), updateColumns, whereSql);
     }

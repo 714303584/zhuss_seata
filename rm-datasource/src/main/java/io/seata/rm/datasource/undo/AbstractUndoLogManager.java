@@ -122,6 +122,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
      */
     @Override
     public void deleteUndoLog(String xid, long branchId, Connection conn) throws SQLException {
+        LOGGER.info("删除UndoLog, XID:{}, branchId:{}, sql:{}",xid, branchId, DELETE_UNDO_LOG_SQL);
         try (PreparedStatement deletePST = conn.prepareStatement(DELETE_UNDO_LOG_SQL)) {
             deletePST.setLong(1, branchId);
             deletePST.setString(2, xid);
@@ -143,6 +144,8 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
      */
     @Override
     public void batchDeleteUndoLog(Set<String> xids, Set<Long> branchIds, Connection conn) throws SQLException {
+
+        LOGGER.info("批量删除UndoLog");
         if (CollectionUtils.isEmpty(xids) || CollectionUtils.isEmpty(branchIds)) {
             return;
         }
@@ -176,6 +179,8 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
         appendInParam(branchIdSize, sqlBuilder);
         sqlBuilder.append(" AND ").append(ClientTableColumnsName.UNDO_LOG_XID).append(" IN ");
         appendInParam(xidSize, sqlBuilder);
+
+        LOGGER.info("批量删除SQL:{}", sqlBuilder.toString());
         return sqlBuilder.toString();
     }
 
@@ -252,6 +257,8 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
      */
     @Override
     public void undo(DataSourceProxy dataSourceProxy, String xid, long branchId) throws TransactionException {
+
+        LOGGER.info("ifreeshare -- 虚拟的Undolog管理者 -- 进行undol操作。 xid:{}, branchId:{}", xid, branchId);
         Connection conn = null;
         ResultSet rs = null;
         PreparedStatement selectPST = null;
@@ -292,14 +299,17 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                     byte[] rollbackInfo = getRollbackInfo(rs);
 
                     String serializer = context == null ? null : context.get(UndoLogConstants.SERIALIZER_KEY);
+                    LOGGER.info("解析UndoLog");
                     UndoLogParser parser = serializer == null ? UndoLogParserFactory.getInstance()
                         : UndoLogParserFactory.getInstance(serializer);
+//                    LOGGER.info();
                     BranchUndoLog branchUndoLog = parser.decode(rollbackInfo);
 
                     try {
                         // put serializer name to local
                         setCurrentSerializer(parser.getName());
                         List<SQLUndoLog> sqlUndoLogs = branchUndoLog.getSqlUndoLogs();
+//                        LOGGER.info("SQLUndoLog");
                         if (sqlUndoLogs.size() > 1) {
                             Collections.reverse(sqlUndoLogs);
                         }
@@ -327,6 +337,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                 // See https://github.com/seata/seata/issues/489
 
                 if (exists) {
+                    LOGGER.info("删除UndoLog， xid：{}, branchId:{}", xid, branchId);
                     deleteUndoLog(xid, branchId, conn);
                     conn.commit();
                     if (LOGGER.isInfoEnabled()) {

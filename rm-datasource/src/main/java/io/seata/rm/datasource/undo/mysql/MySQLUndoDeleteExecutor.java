@@ -24,6 +24,8 @@ import io.seata.rm.datasource.sql.struct.TableRecords;
 import io.seata.rm.datasource.undo.AbstractUndoExecutor;
 import io.seata.rm.datasource.undo.SQLUndoLog;
 import io.seata.sqlparser.util.JdbcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,12 @@ import java.util.stream.Collectors;
  * @author sharajava
  */
 public class MySQLUndoDeleteExecutor extends AbstractUndoExecutor {
+
+
+    /**
+     * Logger for AbstractUndoExecutor
+     **/
+    private static final Logger LOGGER = LoggerFactory.getLogger(MySQLUndoDeleteExecutor.class);
 
     /**
      * Instantiates a new My sql undo delete executor.
@@ -76,6 +84,9 @@ public class MySQLUndoDeleteExecutor extends AbstractUndoExecutor {
             .collect(Collectors.joining(", "));
         String insertValues = fields.stream().map(field -> "?")
             .collect(Collectors.joining(", "));
+
+
+        LOGGER.info("构建undoSQL：{}", String.format(INSERT_SQL_TEMPLATE, sqlUndoLog.getTableName(), insertColumns, insertValues));
 
         return String.format(INSERT_SQL_TEMPLATE, sqlUndoLog.getTableName(), insertColumns, insertValues);
     }
