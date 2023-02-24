@@ -20,6 +20,8 @@ import javax.sql.DataSource;
 import io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyCreator;
 import io.seata.spring.annotation.datasource.SeataDataSourceBeanPostProcessor;
 import io.seata.spring.boot.autoconfigure.properties.SeataProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -37,12 +39,15 @@ import static io.seata.spring.annotation.datasource.AutoDataSourceProxyRegistrar
 @ConditionalOnExpression("${seata.enable:true} && ${seata.enableAutoDataSourceProxy:true} && ${seata.enable-auto-data-source-proxy:true}")
 public class SeataDataSourceAutoConfiguration {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SeataDataSourceAutoConfiguration.class);
     /**
      * The bean seataDataSourceBeanPostProcessor.
      */
     @Bean(BEAN_NAME_SEATA_DATA_SOURCE_BEAN_POST_PROCESSOR)
     @ConditionalOnMissingBean(SeataDataSourceBeanPostProcessor.class)
     public SeataDataSourceBeanPostProcessor seataDataSourceBeanPostProcessor(SeataProperties seataProperties) {
+
+        LOGGER.info("SeataDataSourceAutoConfiguration.seataDataSourceBeanPostProcessor:"+seataProperties.getExcludesForAutoProxying());
         return new SeataDataSourceBeanPostProcessor(seataProperties.getExcludesForAutoProxying(), seataProperties.getDataSourceProxyMode());
     }
 

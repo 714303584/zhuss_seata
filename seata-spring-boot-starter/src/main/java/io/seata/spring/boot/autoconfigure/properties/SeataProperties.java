@@ -16,6 +16,8 @@
 package io.seata.spring.boot.autoconfigure.properties;
 
 import io.seata.common.DefaultValues;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,8 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.SEATA_PREFIX;
 @Component
 @ConfigurationProperties(prefix = SEATA_PREFIX)
 public class SeataProperties {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SeataProperties.class);
     /**
      * whether enable auto configuration
      */
