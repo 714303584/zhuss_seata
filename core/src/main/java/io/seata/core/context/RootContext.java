@@ -92,6 +92,7 @@ public class RootContext {
      */
     @Nullable
     public static String getXID() {
+        LOGGER.info("ifreeshare__RootContext.getXid:"+(String) CONTEXT_HOLDER.get(KEY_XID));
         return (String) CONTEXT_HOLDER.get(KEY_XID);
     }
 

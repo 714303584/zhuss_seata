@@ -66,6 +66,7 @@ public class ExecuteTemplate {
                                                      StatementProxy<S> statementProxy,
                                                      StatementCallback<T, S> statementCallback,
                                                      Object... args) throws SQLException {
+        //全局所 并且不等于AT事物模式 直接返回
         if (!RootContext.requireGlobalLock() && BranchType.AT != RootContext.getBranchType()) {
             // Just work as original statement
             return statementCallback.execute(statementProxy.getTargetStatement(), args);
