@@ -260,27 +260,35 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * prepare undo log.
+     * 准备未提交log
      *
-     * @param beforeImage the before image
-     * @param afterImage  the after image
-     * @throws SQLException the sql exception
+     * @param beforeImage the before image 操作前log
+     * @param afterImage  the after image   操作后log
+     * @throws SQLException the sql exception sql异常
      */
     protected void prepareUndoLog(TableRecords beforeImage, TableRecords afterImage) throws SQLException {
+        //前镜像和后镜像都为空，不做处理
         if (beforeImage.getRows().isEmpty() && afterImage.getRows().isEmpty()) {
             return;
         }
+        //sql类型为更新
         if (SQLType.UPDATE == sqlRecognizer.getSQLType()) {
+            //前镜像和后镜像数据量不一样 -- 进行异常抛出
+            //事务出现--幻读现象
             if (beforeImage.getRows().size() != afterImage.getRows().size()) {
                 throw new ShouldNeverHappenException("Before image size is not equaled to after image size, probably because you updated the primary keys.");
             }
         }
+        //获取连接池
         ConnectionProxy connectionProxy = statementProxy.getConnectionProxy();
-
+        //判断是否为删除
         TableRecords lockKeyRecords = sqlRecognizer.getSQLType() == SQLType.DELETE ? beforeImage : afterImage;
+        //构建锁 todo 重点
         String lockKeys = buildLockKey(lockKeyRecords);
+        //锁不为空
         if (null != lockKeys) {
             connectionProxy.appendLockKey(lockKeys);
-
+            //构建undo数据
             SQLUndoLog sqlUndoLog = buildUndoItem(beforeImage, afterImage);
             connectionProxy.appendUndoLog(sqlUndoLog);
         }
@@ -341,15 +349,17 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * build a BeforeImage
+     * 构建一个数据操作前的数据镜像 （undo_log）
      *
-     * @param tableMeta         the tableMeta
-     * @param selectSQL         the selectSQL
+     * @param tableMeta         the tableMeta 表元数据
+     * @param selectSQL         the selectSQL 操作前的查询语句
      * @param paramAppenderList the paramAppender list
-     * @return a tableRecords
-     * @throws SQLException the sql exception
+     * @return a tableRecords 数据记录
+     * @throws SQLException the sql exception 异常
      */
     protected TableRecords buildTableRecords(TableMeta tableMeta, String selectSQL, ArrayList<List<Object>> paramAppenderList) throws SQLException {
         ResultSet rs = null;
+        //镜像数据
         try (PreparedStatement ps = statementProxy.getConnection().prepareStatement(selectSQL)) {
             if (CollectionUtils.isNotEmpty(paramAppenderList)) {
                 for (int i = 0, ts = paramAppenderList.size(); i < ts; i++) {
@@ -359,7 +369,9 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
                     }
                 }
             }
+            //执行查询
             rs = ps.executeQuery();
+            //构造数据记录
             return TableRecords.buildRecords(tableMeta, rs);
         } finally {
             IOUtil.close(rs);

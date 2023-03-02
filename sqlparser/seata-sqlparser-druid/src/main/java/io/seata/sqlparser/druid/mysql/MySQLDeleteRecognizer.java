@@ -33,6 +33,7 @@ import java.util.List;
 
 /**
  * The type My sql delete recognizer.
+ * mysql的删除sql语句解析器
  *
  * @author sharajava
  */

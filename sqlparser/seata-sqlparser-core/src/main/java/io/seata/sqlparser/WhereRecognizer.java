@@ -20,6 +20,7 @@ import java.util.List;
 
 /**
  * The interface Where recognizer.
+ * sqlwhere条件解析器
  *
  * @author sharajava
  */

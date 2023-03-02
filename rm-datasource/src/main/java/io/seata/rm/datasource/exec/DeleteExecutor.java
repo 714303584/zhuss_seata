@@ -29,9 +29,12 @@ import io.seata.rm.datasource.sql.struct.TableRecords;
 import io.seata.sqlparser.ParametersHolder;
 import io.seata.sqlparser.SQLDeleteRecognizer;
 import io.seata.sqlparser.SQLRecognizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The type Delete executor.
+ * 类型为删除的执行器
  *
  * @author sharajava
  *
@@ -40,8 +43,11 @@ import io.seata.sqlparser.SQLRecognizer;
  */
 public class DeleteExecutor<T, S extends Statement> extends AbstractDMLBaseExecutor<T, S> {
 
+    Logger logger = LoggerFactory.getLogger(DeleteExecutor.class);
+
     /**
      * Instantiates a new Delete executor.
+     * 实例话一个新的删除执行器
      *
      * @param statementProxy    the statement proxy
      * @param statementCallback the statement callback
@@ -52,15 +58,25 @@ public class DeleteExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         super(statementProxy, statementCallback, sqlRecognizer);
     }
 
+    /**
+     * 构建删除前的数据镜像
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords beforeImage() throws SQLException {
+        //删除解析器 -- 此处为mysql的删除文件解析器 （MySQLDeleteRecognizer）
         SQLDeleteRecognizer visitor = (SQLDeleteRecognizer) sqlRecognizer;
+        logger.info("ifreeshare -- DeleteExecutor.beforeImage:SQLDeleteRecognizer:"+sqlRecognizer.getClass().getName());
+        //获取数据表名
         TableMeta tmeta = getTableMeta(visitor.getTableName());
         ArrayList<List<Object>> paramAppenderList = new ArrayList<>();
         String selectSQL = buildBeforeImageSQL(visitor, tmeta, paramAppenderList);
+        logger.info("ifreeshare -- DeleteExecutor.beforeImage:buildBeforeImageSQL:"+selectSQL);
+        //
         return buildTableRecords(tmeta, selectSQL, paramAppenderList);
     }
-
+    //根据删除条件构造查询数据语句
     private String buildBeforeImageSQL(SQLDeleteRecognizer visitor, TableMeta tableMeta, ArrayList<List<Object>> paramAppenderList) {
         String whereCondition = buildWhereCondition(visitor, paramAppenderList);
         StringBuilder suffix = new StringBuilder(" FROM ").append(getFromTableInSQL());

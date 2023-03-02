@@ -47,8 +47,10 @@ public class TableRecords implements java.io.Serializable {
 
     private transient TableMeta tableMeta;
 
+    //表名
     private String tableName;
 
+    //数据行
     private List<Row> rows = new ArrayList<Row>();
 
     /**
@@ -176,6 +178,7 @@ public class TableRecords implements java.io.Serializable {
 
     /**
      * Build records table records.
+     * 构造数据记录
      *
      * @param tmeta     the tmeta
      * @param resultSet the result set

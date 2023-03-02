@@ -96,9 +96,13 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
         if (!JdbcConstants.MYSQL.equalsIgnoreCase(getDbType()) && isMultiPk()) {
             throw new NotSupportYetException("multi pk only support mysql!");
         }
+        //获取数据操作前镜像
         TableRecords beforeImage = beforeImage();
         T result = statementCallback.execute(statementProxy.getTargetStatement(), args);
+        LOGGER.info("ifreeshare -- statementCallback.execute.result:"+result.toString());
+        //获取数据操作后镜像
         TableRecords afterImage = afterImage(beforeImage);
+        //插入undolog -- 待回滚
         prepareUndoLog(beforeImage, afterImage);
         return result;
     }
