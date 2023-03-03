@@ -184,6 +184,9 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
         ShutdownHook.getInstance().destroyAll();
     }
 
+    /**
+     * 进行初始化client的处理
+     */
     private void initClient() {
 
         LOGGER.info("ifreeshare -- initClient()");
@@ -194,14 +197,16 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
         if (StringUtils.isNullOrEmpty(applicationId) || StringUtils.isNullOrEmpty(txServiceGroup)) {
             throw new IllegalArgumentException(String.format("applicationId: %s, txServiceGroup: %s", applicationId, txServiceGroup));
         }
-        //init TM
+
         LOGGER.info("ifreeshare -- TMClient.init()");
+        //初始化事务管理器
         TMClient.init(applicationId, txServiceGroup, accessKey, secretKey);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Transaction Manager Client is initialized. applicationId[{}] txServiceGroup[{}]", applicationId, txServiceGroup);
         }
         //init RM
         LOGGER.info("ifreeshare -- RMClient.init()");
+        //初始化资源管理器
         RMClient.init(applicationId, txServiceGroup);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Resource Manager is initialized. applicationId[{}] txServiceGroup[{}]", applicationId, txServiceGroup);
@@ -210,6 +215,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Global Transaction Clients are initialized. ");
         }
+        //注册spring关闭钩子
         registerSpringShutdownHook();
 
     }
@@ -265,6 +271,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
                     ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
                         (ConfigurationChangeListener)interceptor);
                 } else {
+                    //
                     Class<?> serviceInterface = SpringProxyUtils.findTargetClass(bean);
                     Class<?>[] interfacesIfJdk = SpringProxyUtils.findInterfaces(bean);
 
@@ -284,6 +291,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
 
                 LOGGER.info("Bean[{}] with name [{}] would use interceptor [{}]", bean.getClass().getName(), beanName, interceptor.getClass().getName());
                 if (!AopUtils.isAopProxy(bean)) {
+                    //调用spring的织入
                     bean = super.wrapIfNecessary(bean, beanName, cacheKey);
                 } else {
                     AdvisedSupport advised = SpringProxyUtils.getAdvisedSupport(bean);

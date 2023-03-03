@@ -269,9 +269,11 @@ public final class RmNettyRemotingClient extends AbstractNettyRemotingClient {
 
     private void registerProcessor() {
         // 1.registry rm client handle branch commit processor
+        //1。注册一个分支事务处理器
         RmBranchCommitProcessor rmBranchCommitProcessor = new RmBranchCommitProcessor(getTransactionMessageHandler(), this);
         super.registerProcessor(MessageType.TYPE_BRANCH_COMMIT, rmBranchCommitProcessor, messageExecutor);
-        // 2.registry rm client handle branch commit processor
+        // 2.registry rm client handle branch rollback processor
+        //注册一个分支事务回滚处理器
         RmBranchRollbackProcessor rmBranchRollbackProcessor = new RmBranchRollbackProcessor(getTransactionMessageHandler(), this);
         super.registerProcessor(MessageType.TYPE_BRANCH_ROLLBACK, rmBranchRollbackProcessor, messageExecutor);
         // 3.registry rm handler undo log processor

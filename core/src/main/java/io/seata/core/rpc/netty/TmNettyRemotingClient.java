@@ -72,6 +72,12 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
     private String secretKey;
 
 
+    /**
+     * 私有事务管理器构造方法
+     * @param nettyClientConfig
+     * @param eventExecutorGroup
+     * @param messageExecutor
+     */
     private TmNettyRemotingClient(NettyClientConfig nettyClientConfig,
                                   EventExecutorGroup eventExecutorGroup,
                                   ThreadPoolExecutor messageExecutor) {
@@ -94,6 +100,7 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
 
     /**
      * Gets instance.
+     * 获取事务管理器的远程客户端
      *
      * @param applicationId           the application id
      * @param transactionServiceGroup the transaction service group
@@ -103,6 +110,7 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
      */
     public static TmNettyRemotingClient getInstance(String applicationId, String transactionServiceGroup, String accessKey, String secretKey) {
         TmNettyRemotingClient tmRpcClient = getInstance();
+        //设置程序Id
         tmRpcClient.setApplicationId(applicationId);
         tmRpcClient.setTransactionServiceGroup(transactionServiceGroup);
         tmRpcClient.setAccessKey(accessKey);
@@ -119,7 +127,9 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
         if (instance == null) {
             synchronized (TmNettyRemotingClient.class) {
                 if (instance == null) {
+                    //netty配置文件
                     NettyClientConfig nettyClientConfig = new NettyClientConfig();
+                    //消息处理线程池
                     final ThreadPoolExecutor messageExecutor = new ThreadPoolExecutor(
                             nettyClientConfig.getClientWorkerThreads(), nettyClientConfig.getClientWorkerThreads(),
                             KEEP_ALIVE_TIME, TimeUnit.SECONDS,
@@ -127,7 +137,9 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
                             new NamedThreadFactory(nettyClientConfig.getTmDispatchThreadPrefix(),
                                     nettyClientConfig.getClientWorkerThreads()),
                             RejectedPolicies.runsOldestTaskPolicy());
+                    //获取一个事务管理器的
                     instance = new TmNettyRemotingClient(nettyClientConfig, null, messageExecutor);
+
                 }
             }
         }

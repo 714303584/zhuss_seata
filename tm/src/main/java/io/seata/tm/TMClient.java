@@ -41,7 +41,8 @@ public class TMClient {
     }
 
     /**
-     * Init.
+     * 初始事务管理器
+     *  使用netty进行通信
      *
      * @param applicationId           the application id
      * @param transactionServiceGroup the transaction service group
@@ -51,6 +52,7 @@ public class TMClient {
     public static void init(String applicationId, String transactionServiceGroup, String accessKey, String secretKey) {
         LOGGER.info("初始化事务管理器客户端 TmClient.init(),applicationId-{},transactionServiceGroup-{},secretKey-{}",
                 applicationId,transactionServiceGroup,secretKey);
+
         TmNettyRemotingClient tmNettyRemotingClient = TmNettyRemotingClient.getInstance(applicationId, transactionServiceGroup, accessKey, secretKey);
         tmNettyRemotingClient.init();
     }

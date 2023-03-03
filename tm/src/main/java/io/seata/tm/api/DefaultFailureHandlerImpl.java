@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type Default failure handler.
+ * 默认的失败处理逻辑
  *
  * @author slievrly
  */

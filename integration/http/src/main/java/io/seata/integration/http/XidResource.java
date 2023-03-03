@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Xid handler.
- *
+ * xid  处理程序
  * @author wangxb
  */
 public class XidResource {
@@ -33,6 +33,7 @@ public class XidResource {
     public static void cleanXid(String rpcXid) {
         String xid = RootContext.getXID();
         if (xid != null) {
+            //
             String unbindXid = RootContext.unbind();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("unbind[{}] from RootContext", unbindXid);

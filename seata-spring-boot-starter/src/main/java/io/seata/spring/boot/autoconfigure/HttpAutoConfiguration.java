@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * Auto bean add for spring context if in springboot env.
+ * springboot环境下的添加向spring context注入一个bean
  *
  * @author wangxb
  */
@@ -36,11 +37,13 @@ public class HttpAutoConfiguration extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        //添加spring的拦截器
         registry.addInterceptor(new TransactionPropagationInterceptor());
     }
 
     @Override
     public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
+        //添加http的异常拦截器 //进行数据回滚
         exceptionResolvers.add(new HttpHandlerExceptionResolver());
     }
 

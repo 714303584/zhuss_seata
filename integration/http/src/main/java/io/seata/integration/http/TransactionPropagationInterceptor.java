@@ -35,13 +35,16 @@ public class TransactionPropagationInterceptor extends HandlerInterceptorAdapter
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        //获取xid
         String xid = RootContext.getXID();
+        //获取rpcxid
         String rpcXid = request.getHeader(RootContext.KEY_XID);
         LOGGER.info("ifreeshare -- TransactionPropagationInterceptor.preHandler(), rpcXid-{}", rpcXid);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("xid in RootContext[{}] xid in HttpContext[{}]", xid, rpcXid);
         }
         if (xid == null && rpcXid != null) {
+            //绑定rpcxid -- 进行rpcxid绑定
             RootContext.bind(rpcXid);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("bind[{}] to RootContext", rpcXid);

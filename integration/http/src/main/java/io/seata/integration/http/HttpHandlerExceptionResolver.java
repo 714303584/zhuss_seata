@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Http exception handle.
- *
+ *  http请求异常handle
  * @author wangxb
  */
 public class HttpHandlerExceptionResolver extends AbstractHandlerExceptionResolver {
@@ -32,7 +32,7 @@ public class HttpHandlerExceptionResolver extends AbstractHandlerExceptionResolv
 
     @Override
     protected ModelAndView doResolveException(HttpServletRequest request, HttpServletResponse httpServletResponse, Object o, Exception e) {
-
+        //清除Request中的Xid
         XidResource.cleanXid(request.getHeader(RootContext.KEY_XID));
         return null;
     }

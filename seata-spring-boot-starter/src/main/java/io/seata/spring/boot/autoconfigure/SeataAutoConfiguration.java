@@ -32,7 +32,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.SEATA_PREFIX;
 
 /**
  * The type Seata auto configuration
- *
+ *默认的seata的配置
  * @author xingfudeshi@gmail.com
  */
 @ConditionalOnProperty(prefix = SEATA_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -53,6 +53,7 @@ public class SeataAutoConfiguration {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Automatically configure Seata");
         }
+        //全局事务的扫描器
         return new GlobalTransactionScanner(seataProperties.getApplicationId(), seataProperties.getTxServiceGroup(), failureHandler);
     }
 
