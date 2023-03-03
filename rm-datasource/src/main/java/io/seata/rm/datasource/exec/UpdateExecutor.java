@@ -54,6 +54,7 @@ public class UpdateExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
 
     /**
      * Instantiates a new Update executor.
+     * 实例化一个更新执行者
      *
      * @param statementProxy    the statement proxy
      * @param statementCallback the statement callback

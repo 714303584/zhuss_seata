@@ -22,6 +22,9 @@ import io.seata.core.model.BranchType;
 import io.seata.rm.datasource.StatementProxy;
 import io.seata.rm.datasource.sql.SQLVisitorFactory;
 import io.seata.sqlparser.SQLRecognizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -32,6 +35,7 @@ import java.util.List;
  * @author sharajava
  */
 public class ExecuteTemplate {
+    static Logger logger = LoggerFactory.getLogger(ExecuteTemplate.class)
 
     /**
      * Execute t.
@@ -69,10 +73,12 @@ public class ExecuteTemplate {
         //全局所 并且不等于AT事物模式 直接返回
         if (!RootContext.requireGlobalLock() && BranchType.AT != RootContext.getBranchType()) {
             // Just work as original statement
+            //仅以原始statement运行
             return statementCallback.execute(statementProxy.getTargetStatement(), args);
         }
-
+        //获取数据库类型
         String dbType = statementProxy.getConnectionProxy().getDbType();
+        logger.info("ifreeshare -- ExecuteTemplate.execute.dbType:"+dbType);
         if (CollectionUtils.isEmpty(sqlRecognizers)) {
             sqlRecognizers = SQLVisitorFactory.get(
                     statementProxy.getTargetSQL(),
@@ -84,6 +90,7 @@ public class ExecuteTemplate {
         } else {
             if (sqlRecognizers.size() == 1) {
                 SQLRecognizer sqlRecognizer = sqlRecognizers.get(0);
+                //获取sql类型
                 switch (sqlRecognizer.getSQLType()) {
                     case INSERT:
                         executor = EnhancedServiceLoader.load(InsertExecutor.class, dbType,

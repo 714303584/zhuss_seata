@@ -329,6 +329,7 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * build a SQLUndoLog
+     *  构建分布式事务的Undolog
      *
      * @param beforeImage the before image
      * @param afterImage  the after image
