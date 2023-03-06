@@ -31,11 +31,12 @@ public class TransactionManagerHolder {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionManagerHolder.class);
 
     private static class SingletonHolder {
-
+        //默认的事务管理器 -- 单例模式
         private static TransactionManager INSTANCE = null;
 
         static {
             try {
+                //事务管理器初始化
                 INSTANCE = EnhancedServiceLoader.load(TransactionManager.class);
                 LOGGER.info("TransactionManager Singleton {}", INSTANCE);
             } catch (Throwable anyEx) {
@@ -46,7 +47,7 @@ public class TransactionManagerHolder {
 
     /**
      * Get transaction manager.
-     *
+     * 获取一个事务管理器
      * @return the transaction manager
      */
     public static TransactionManager get() {

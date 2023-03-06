@@ -112,6 +112,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     /**
      * Instantiates a new Global transactional interceptor.
+     * 实例一个新的全局事务拦截器
      *
      * @param failureHandler
      *            the failure handler
@@ -141,24 +142,36 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         this.initDefaultGlobalTransactionTimeout();
     }
 
+    /**
+     * 拦截器的执行方法
+     * @param methodInvocation
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable {
         LOGGER.info("ifreeshare -- invoke:{}",methodInvocation.toString());
         LOGGER.info("ifreeshare -- globalTransaction is begin --");
         Class<?> targetClass =
             methodInvocation.getThis() != null ? AopUtils.getTargetClass(methodInvocation.getThis()) : null;
+        // 获取注解方法的实现
         Method specificMethod = ClassUtils.getMostSpecificMethod(methodInvocation.getMethod(), targetClass);
         if (specificMethod != null && !specificMethod.getDeclaringClass().equals(Object.class)) {
             final Method method = BridgeMethodResolver.findBridgedMethod(specificMethod);
+            //获取全局事务注解
             final GlobalTransactional globalTransactionalAnnotation =
                 getAnnotation(method, targetClass, GlobalTransactional.class);
             LOGGER.info("ifreeshare -- globalTransaction method:{}",method.toGenericString());
+            //获取是否有全局锁
             final GlobalLock globalLockAnnotation = getAnnotation(method, targetClass, GlobalLock.class);
             boolean localDisable = disable || (degradeCheck && degradeNum >= degradeCheckAllowTimes);
             if (!localDisable) {
+                //全局事务注解不为空
                 if (globalTransactionalAnnotation != null) {
+                    //执行全局事务
                     return handleGlobalTransaction(methodInvocation, globalTransactionalAnnotation);
                 } else if (globalLockAnnotation != null) {
+                    //全局锁
                     return handleGlobalLock(methodInvocation, globalLockAnnotation);
                 }
             }
@@ -201,13 +214,14 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         LOGGER.info("ifreeshare -- handleGlobalTransaction -- start");
         boolean succeed = true;
         try {
+            //使用事务模板进行执行
             return transactionalTemplate.execute(new TransactionalExecutor() {
                 @Override
                 public Object execute() throws Throwable {
                     LOGGER.info("ifreeshare -- MethodInvocation methodInvocation:{}"+methodInvocation.getMethod().getName());
                     return methodInvocation.proceed();
                 }
-
+                //事务执行器 -- 事务名称
                 public String name() {
                     String name = globalTrxAnno.name();
                     if (!StringUtils.isNullOrEmpty(name)) {
@@ -219,21 +233,29 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
                 @Override
                 public TransactionInfo getTransactionInfo() {
                     // reset the value of timeout
+                    //重制超时时间
+                    //获取注解的超时时间
                     int timeout = globalTrxAnno.timeoutMills();
                     if (timeout <= 0 || timeout == DEFAULT_GLOBAL_TRANSACTION_TIMEOUT) {
                         timeout = defaultGlobalTransactionTimeout;
                     }
-
+                    //实例化一个事务信息
                     TransactionInfo transactionInfo = new TransactionInfo();
+                    //设置超时时间
                     transactionInfo.setTimeOut(timeout);
                     LOGGER.info("ifreeshare -- TransactionInfo.getTransactionInfo -- Transaction name :{}", name());
 //                    System.out.println("TransactionInfo name:"+name());
+                    //事务名称
                     transactionInfo.setName(name());
+                    //事务的传播级别
                     transactionInfo.setPropagation(globalTrxAnno.propagation());
+                    //重试次数
                     transactionInfo.setLockRetryInternal(globalTrxAnno.lockRetryInternal());
+                    //锁重试次数
                     transactionInfo.setLockRetryTimes(globalTrxAnno.lockRetryTimes());
                     Set<RollbackRule> rollbackRules = new LinkedHashSet<>();
                     for (Class<?> rbRule : globalTrxAnno.rollbackFor()) {
+                        //设置回滚规则
                         rollbackRules.add(new RollbackRule(rbRule));
                     }
                     for (String rbRule : globalTrxAnno.rollbackForClassName()) {

@@ -65,7 +65,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
     /**
      * Instantiates a new Default global transaction.
-     *
+     * 实例一个默认的全局事务
      * @param xid    the xid
      * @param status the status
      * @param role   the role
@@ -73,6 +73,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
     DefaultGlobalTransaction(String xid, GlobalStatus status, GlobalTransactionRole role) {
         LOGGER.info("ifreeshare -- create default global transaction xid:{},status:{},role:{}",
                 xid, status,role);
+        //
         this.transactionManager = TransactionManagerHolder.get();
         this.xid = xid;
         this.status = status;
@@ -90,6 +91,13 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         begin(timeout, DEFAULT_GLOBAL_TX_NAME);
     }
 
+    /**
+     * TM开启事务
+     * 开启全局事务
+     * @param timeout Given timeout in MILLISECONDS.
+     * @param name    Given name.
+     * @throws TransactionException
+     */
     @Override
     public void begin(int timeout, String name) throws TransactionException {
         LOGGER.info("ifreeshare -- DefaultGlobalTransaction.begin() global transaction! timeout:{}, name:{}",
@@ -108,16 +116,22 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
             throw new IllegalStateException("Global transaction already exists," +
                 " can't begin a new global transaction, currentXid = " + currentXid);
         }
+        //事务管理器开启事务  == 获取事务的Xid
         xid = transactionManager.begin(null, null, name, timeout);
+        //设置事务状态并绑定全局事务ID
         status = GlobalStatus.Begin;
         RootContext.bind(xid);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Begin new global transaction [{}]", xid);
         }
-
+        //全局事务开启成功
         LOGGER.info("ifreeshare -- DefaultGlobalTransaction.begin() global transaction! currentXid:{}", currentXid);
     }
 
+    /**
+     * 进行分支提交
+     * @throws TransactionException
+     */
     @Override
     public void commit() throws TransactionException {
         if (role == GlobalTransactionRole.Participant) {
@@ -127,11 +141,13 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
             }
             return;
         }
+        //判定Xid不为空
         assertXIDNotNull();
         int retry = COMMIT_RETRY_COUNT <= 0 ? DEFAULT_TM_COMMIT_RETRY_COUNT : COMMIT_RETRY_COUNT;
         try {
             while (retry > 0) {
                 try {
+                    //TM进行事务提交
                     status = transactionManager.commit(xid);
                     break;
                 } catch (Throwable ex) {

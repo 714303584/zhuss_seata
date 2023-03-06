@@ -48,32 +48,52 @@ public class DefaultTransactionManager implements TransactionManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTransactionManager.class);
 
+    /**
+     * 默认的事务管理器开启事务
+     * @param applicationId           ID of the application who begins this transaction.
+     * @param transactionServiceGroup ID of the transaction service group.
+     * @param name                    Give a name to the global transaction.
+     * @param timeout                 Timeout of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException {
         LOGGER.info(" 默认事务管理器，开启事务方法");
         LOGGER.info("DefaultTransactionManager.begin! applicationId:{},transactionServiceGrou:{}, name:{}, timeout:{}",
                 applicationId, transactionServiceGroup, name, timeout);
-        //全局开始请求
+        //全局事务开始请求
         GlobalBeginRequest request = new GlobalBeginRequest();
         request.setTransactionName(name);
         request.setTimeout(timeout);
         LOGGER.info("事务开启实体(GlobalBeginRequest):{}",request.toString());
         LOGGER.info("发送开启事务请求");
+        //同步发送开启请求
         GlobalBeginResponse response = (GlobalBeginResponse) syncCall(request);
         LOGGER.info("事务开启返回(GlobalBeginResponse):{}",response.toString());
+        //失败抛出异常
         if (response.getResultCode() == ResultCode.Failed) {
             throw new TmTransactionException(TransactionExceptionCode.BeginFailed, response.getMsg());
         }
+        //成功获取XID
         return response.getXid();
     }
 
+    /**
+     * 进行事务提交
+     * @param xid XID of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus commit(String xid) throws TransactionException {
         LOGGER.info("默认的事务管理器,xid:{}",xid);
+        //进行事务提交请求封装
         GlobalCommitRequest globalCommit = new GlobalCommitRequest();
         globalCommit.setXid(xid);
         LOGGER.info("事务提交请求(GlobalCommitRequest):{}", globalCommit.toString());
+        //发送提交请求
         GlobalCommitResponse response = (GlobalCommitResponse) syncCall(globalCommit);
         LOGGER.info("事务提交请求(GlobalCommitResponse):{}", response.toString());
         return response.getGlobalStatus();
@@ -110,11 +130,18 @@ public class DefaultTransactionManager implements TransactionManager {
         return response.getGlobalStatus();
     }
 
+    /**
+     * 事务管理器发送请求方法
+     * @param request
+     * @return
+     * @throws TransactionException
+     */
     private AbstractTransactionResponse syncCall(AbstractTransactionRequest request) throws TransactionException {
         try {
             LOGGER.info("发送请求：request.class:{}",request.getTypeCode());
             LOGGER.info("请求发送, 发送请求 request:{}",
                     request.toString());
+            //资源管理器发送请求
             return (AbstractTransactionResponse) TmNettyRemotingClient.getInstance().sendSyncRequest(request);
         } catch (TimeoutException toe) {
             throw new TmTransactionException(TransactionExceptionCode.IO, "RPC timeout", toe);

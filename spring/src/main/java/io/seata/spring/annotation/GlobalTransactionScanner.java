@@ -240,7 +240,8 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
      * GlobalLock:
      * @see io.seata.spring.annotation.GlobalLock // GlobalLock annotation
      * Corresponding interceptor:
-     * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalLock(MethodInvocation, GlobalLock) // GlobalLock handler
+     * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalLock(MethodInvocation, GlobalLock)
+     * // GlobalLock handler
      *
      * TCC mode:
      * @see io.seata.rm.tcc.api.LocalTCC // TCC annotation on interface
@@ -248,6 +249,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
      * @see io.seata.rm.tcc.remoting.RemotingParser // Remote TCC service parser
      * Corresponding interceptor:
      * @see io.seata.spring.tcc.TccActionInterceptor // the interceptor of TCC mode
+     *      tcc分布式事务拦截器
      */
     @Override
     protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
@@ -267,6 +269,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
 
                     LOGGER.info("ifreeshare -- tcc proxy");
                     //TCC interceptor, proxy bean of sofa:reference/dubbo:reference, and LocalTCC
+                    //TCC拦截器，
                     interceptor = new TccActionInterceptor(TCCBeanParserUtils.getRemotingDesc(beanName));
                     ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
                         (ConfigurationChangeListener)interceptor);
@@ -290,8 +293,9 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
                 }
 
                 LOGGER.info("Bean[{}] with name [{}] would use interceptor [{}]", bean.getClass().getName(), beanName, interceptor.getClass().getName());
+                //判断aop是否代理了此bean
                 if (!AopUtils.isAopProxy(bean)) {
-                    //调用spring的织入
+                    //调用
                     bean = super.wrapIfNecessary(bean, beanName, cacheKey);
                 } else {
                     AdvisedSupport advised = SpringProxyUtils.getAdvisedSupport(bean);

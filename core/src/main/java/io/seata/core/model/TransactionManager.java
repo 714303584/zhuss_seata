@@ -20,6 +20,8 @@ import io.seata.core.exception.TransactionException;
 /**
  * Transaction Manager.
  *
+ * 事务管理器接口
+ *
  * Define a global transaction and control it.
  *
  * @author sharajava
@@ -28,6 +30,7 @@ public interface TransactionManager {
 
     /**
      * Begin a new global transaction.
+     * 开始一个全局事务
      *
      * @param applicationId           ID of the application who begins this transaction.
      * @param transactionServiceGroup ID of the transaction service group.
