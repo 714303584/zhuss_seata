@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * default resource manager, adapt all resource managers
+ * SEATA默认的资源管理器 -- 适配所有资源管理
  *
  * @author zhangsen
  */
@@ -42,6 +43,7 @@ public class DefaultResourceManager implements ResourceManager {
 
     /**
      * all resource managers
+     * 所有的资源管理器
      */
     protected static Map<BranchType, ResourceManager> resourceManagers
         = new ConcurrentHashMap<>();
@@ -71,6 +73,7 @@ public class DefaultResourceManager implements ResourceManager {
 
     protected void initResourceManagers() {
         //init all resource managers
+        //初始化所有资源管理器
         List<ResourceManager> allResourceManagers = EnhancedServiceLoader.loadAll(ResourceManager.class);
         if (CollectionUtils.isNotEmpty(allResourceManagers)) {
             for (ResourceManager rm : allResourceManagers) {
@@ -80,6 +83,17 @@ public class DefaultResourceManager implements ResourceManager {
         }
     }
 
+    /**
+     * 进行分支事务的提交
+     * @param branchType      the branch type 分支类型
+     * @param xid             Transaction id. 全局事务ID
+     * @param branchId        Branch id.    分支ID
+     * @param resourceId      Resource id.  资源ID
+     * @param applicationData Application data bind with this branch.
+     *                         绑定到此事务的应用数据
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchCommit(BranchType branchType, String xid, long branchId,
                                      String resourceId, String applicationData)
@@ -87,6 +101,7 @@ public class DefaultResourceManager implements ResourceManager {
 
         LOGGER.info("ifreeshare -- 分支事务提交（RM.branchCommit({},{},{},{},{})）",
                 branchType,xid,branchId,resourceId,applicationData);
+        //获取事务管理器进行分支提交
         return getResourceManager(branchType).branchCommit(branchType, xid, branchId, resourceId, applicationData);
     }
 

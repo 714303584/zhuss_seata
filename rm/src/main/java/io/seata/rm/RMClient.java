@@ -26,11 +26,13 @@ public class RMClient {
 
     /**
      * Init.
+     * 初始化资源管理客户端
      *
      * @param applicationId           the application id
      * @param transactionServiceGroup the transaction service group
      */
     public static void init(String applicationId, String transactionServiceGroup) {
+        //获取资源管理器
         RmNettyRemotingClient rmNettyRemotingClient = RmNettyRemotingClient.getInstance(applicationId, transactionServiceGroup);
         rmNettyRemotingClient.setResourceManager(DefaultResourceManager.get());
 

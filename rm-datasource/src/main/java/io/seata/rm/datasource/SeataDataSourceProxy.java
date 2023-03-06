@@ -21,6 +21,8 @@ import io.seata.core.model.BranchType;
 
 /**
  * The interface Seata data source.
+ * seata的的数据源接口
+ * 继承子javax.sql.DataSource接口 提供数据库数据源
  *
  * @author wang.liang
  */
