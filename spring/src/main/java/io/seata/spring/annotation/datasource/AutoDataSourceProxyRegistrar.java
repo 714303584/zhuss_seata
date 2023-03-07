@@ -26,6 +26,7 @@ import org.springframework.core.type.AnnotationMetadata;
 /**
  * @author xingfudeshi@gmail.com
  * The type auto data source proxy registrar
+ * 注册自动代理数据源
  */
 public class AutoDataSourceProxyRegistrar implements ImportBeanDefinitionRegistrar {
     private static final String ATTRIBUTE_KEY_USE_JDK_PROXY = "useJdkProxy";

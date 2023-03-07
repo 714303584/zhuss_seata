@@ -28,6 +28,8 @@ import org.springframework.aop.support.DefaultIntroductionAdvisor;
 import org.springframework.beans.BeansException;
 
 /**
+ *
+ * AbstractAutoProxyCreator
  * @author xingfudeshi@gmail.com
  */
 public class SeataAutoDataSourceProxyCreator extends AbstractAutoProxyCreator {

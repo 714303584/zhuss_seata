@@ -32,6 +32,7 @@ import org.springframework.aop.IntroductionInfo;
 import org.springframework.beans.BeanUtils;
 
 /**
+ * 进行seata数据源的代理增强
  * @author xingfudeshi@gmail.com
  */
 public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, IntroductionInfo {
@@ -59,6 +60,12 @@ public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, Introd
         RootContext.setDefaultBranchType(this.dataSourceProxyMode);
     }
 
+    /**
+     * 进行方法增强
+     * @param invocation
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
 
@@ -71,6 +78,7 @@ public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, Introd
         Object[] args = invocation.getArguments();
         Method m = BeanUtils.findDeclaredMethod(dataSourceProxyClazz, method.getName(), method.getParameterTypes());
         if (m != null && DataSource.class.isAssignableFrom(method.getDeclaringClass())) {
+            LOGGER.info("DataSource:"+method.getDeclaringClass().getName());
             SeataDataSourceProxy dataSourceProxy = DataSourceProxyHolder.get().putDataSource((DataSource) invocation.getThis(), dataSourceProxyMode);
             return m.invoke(dataSourceProxy, args);
         } else {

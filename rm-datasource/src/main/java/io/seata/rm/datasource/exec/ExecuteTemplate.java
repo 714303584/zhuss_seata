@@ -35,7 +35,7 @@ import java.util.List;
  * @author sharajava
  */
 public class ExecuteTemplate {
-    static Logger logger = LoggerFactory.getLogger(ExecuteTemplate.class)
+    static Logger logger = LoggerFactory.getLogger(ExecuteTemplate.class);
 
     /**
      * Execute t.

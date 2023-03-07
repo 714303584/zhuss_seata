@@ -29,6 +29,9 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 /**
  * The type seata data source bean post processor
  *
+ * BeanPostProcessor 是在spring完成实例化之后对实例化的bean添加一些自定义的处理逻辑。
+ *  这里是在对数据源进行处理
+ *
  * @author xingfudeshi@gmail.com
  * @author wang.liang
  */
@@ -49,16 +52,25 @@ public class SeataDataSourceBeanPostProcessor implements BeanPostProcessor {
         return bean;
     }
 
+    /**
+     * 在DataSource实例化之后进行处理
+     * @param bean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof DataSource) {
             //When not in the excludes, put and init proxy.
+            //excludes 不包含此数据源的时候 添加到
             if (!excludes.contains(bean.getClass().getName())) {
                 //Only put and init proxy, not return proxy.
                 DataSourceProxyHolder.get().putDataSource((DataSource) bean, dataSourceProxyMode);
             }
 
             //If is SeataDataSourceProxy, return the original data source.
+            //如果是Seata的数据源代理，返回原始的数据源
             if (bean instanceof SeataDataSourceProxy) {
                 LOGGER.info("Unwrap the bean of the data source," +
                     " and return the original data source to replace the data source proxy.");

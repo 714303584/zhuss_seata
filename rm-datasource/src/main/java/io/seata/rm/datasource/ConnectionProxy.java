@@ -41,6 +41,7 @@ import static io.seata.common.DefaultValues.DEFAULT_CLIENT_REPORT_SUCCESS_ENABLE
 
 /**
  * The type Connection proxy.
+ *  一个数据库连接代理
  *
  * @author sharajava
  */
@@ -60,6 +61,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * Instantiates a new Connection proxy.
+     * 实例化一个数据库连接代理
      *
      * @param dataSourceProxy  the data source proxy
      * @param targetConnection the target connection
@@ -106,7 +108,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * Check lock.
-     *
+     *  检查锁
      * @param lockKeys the lockKeys
      * @throws SQLException the sql exception
      */
@@ -224,7 +226,10 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.releaseSavepoint(savepoint);
     }
 
-
+    /**
+     * 提交处理
+     * @throws SQLException
+     */
     private void doCommit() throws SQLException {
         if (context.inGlobalTransaction()) {
             processGlobalTransactionCommit();
@@ -245,6 +250,10 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.reset();
     }
 
+    /**
+     * 处理事务提交 --
+     * @throws SQLException
+     */
     private void processGlobalTransactionCommit() throws SQLException {
         try {
             register();
@@ -265,6 +274,10 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.reset();
     }
 
+    /**
+     * 注册分支事务到tc
+     * @throws TransactionException
+     */
     private void register() throws TransactionException {
         if (!context.hasUndoLog() || !context.hasLockKey()) {
             return;
