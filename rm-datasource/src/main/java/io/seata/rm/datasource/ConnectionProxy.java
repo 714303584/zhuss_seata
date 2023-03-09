@@ -283,6 +283,8 @@ public class ConnectionProxy extends AbstractConnectionProxy {
             report(false);
             throw new SQLException(ex);
         }
+
+        // TODO  IS_REPORT_SUCCESS_ENABLE
         if (IS_REPORT_SUCCESS_ENABLE) {
             report(true);
         }
@@ -306,6 +308,10 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.setBranchId(branchId);
     }
 
+    /**
+     * 进行事务回滚
+     * @throws SQLException
+     */
     @Override
     public void rollback() throws SQLException {
         targetConnection.rollback();
@@ -317,6 +323,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * change connection autoCommit to false by seata
+     * 修改自动提交为false
      *
      * @throws SQLException the sql exception
      */
@@ -325,6 +332,11 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         setAutoCommit(false);
     }
 
+    /**
+     * 设置自动提交
+     * @param autoCommit
+     * @throws SQLException
+     */
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         if ((context.inGlobalTransaction() || context.isGlobalLockRequire()) && autoCommit && !getAutoCommit()) {
@@ -334,6 +346,11 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         targetConnection.setAutoCommit(autoCommit);
     }
 
+    /**
+     * 上报
+     * @param commitDone
+     * @throws SQLException
+     */
     private void report(boolean commitDone) throws SQLException {
         if (context.getBranchId() == null) {
             return;
@@ -341,6 +358,9 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         int retry = REPORT_RETRY_COUNT;
         while (retry > 0) {
             try {
+                //分支事务上报
+                //commitDone 是否提交
+                //上报分支事务的状态，以便于决定全局事务是否回滚
                 DefaultResourceManager.get().branchReport(BranchType.AT, context.getXid(), context.getBranchId(),
                     commitDone ? BranchStatus.PhaseOne_Done : BranchStatus.PhaseOne_Failed, null);
                 return;
