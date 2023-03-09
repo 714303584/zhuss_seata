@@ -39,6 +39,7 @@ public class SeataAutoDataSourceProxyCreator extends AbstractAutoProxyCreator {
 
     public SeataAutoDataSourceProxyCreator(boolean useJdkProxy, String[] excludes, String dataSourceProxyMode) {
         this.excludes = Arrays.asList(excludes);
+        //初始化一个默认的Seata的数据源的代理
         this.advisor = new DefaultIntroductionAdvisor(new SeataAutoDataSourceProxyAdvice(dataSourceProxyMode));
         setProxyTargetClass(!useJdkProxy);
     }

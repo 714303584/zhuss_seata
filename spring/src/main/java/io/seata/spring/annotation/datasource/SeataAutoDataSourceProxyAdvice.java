@@ -62,6 +62,7 @@ public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, Introd
 
     /**
      * 进行方法增强
+     *  如果是数据源 -- 则进行方法增强
      * @param invocation
      * @return
      * @throws Throwable
@@ -77,8 +78,10 @@ public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, Introd
         Method method = invocation.getMethod();
         Object[] args = invocation.getArguments();
         Method m = BeanUtils.findDeclaredMethod(dataSourceProxyClazz, method.getName(), method.getParameterTypes());
+        //方法是否来自数据源
         if (m != null && DataSource.class.isAssignableFrom(method.getDeclaringClass())) {
             LOGGER.info("DataSource:"+method.getDeclaringClass().getName());
+            //数据源代理
             SeataDataSourceProxy dataSourceProxy = DataSourceProxyHolder.get().putDataSource((DataSource) invocation.getThis(), dataSourceProxyMode);
             return m.invoke(dataSourceProxy, args);
         } else {

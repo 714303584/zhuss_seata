@@ -40,6 +40,7 @@ import static io.seata.common.DefaultValues.DEFAULT_TABLE_META_CHECKER_INTERVAL;
 
 /**
  * The type Data source proxy.
+ * 默认的数据源代理
  *
  * @author sharajava
  */
@@ -75,6 +76,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
     /**
      * Instantiates a new Data source proxy.
      *
+     * 实例化一个数据源代理
      * @param targetDataSource the target data source
      */
     public DataSourceProxy(DataSource targetDataSource) {
@@ -83,7 +85,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
 
     /**
      * Instantiates a new Data source proxy.
-     *
+     * 实例化一个数据源代理
      * @param targetDataSource the target data source
      * @param resourceGroupId  the resource group id
      */
@@ -96,6 +98,11 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         init(targetDataSource, resourceGroupId);
     }
 
+    /**
+     * 实例化的实际调用方法
+     * @param dataSource 代理目标数据源
+     * @param resourceGroupId
+     */
     private void init(DataSource dataSource, String resourceGroupId) {
         this.resourceGroupId = resourceGroupId;
         try (Connection connection = dataSource.getConnection()) {
@@ -107,8 +114,10 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         } catch (SQLException e) {
             throw new IllegalStateException("can not init dataSource", e);
         }
+        //注册数据源到RM
         DefaultResourceManager.get().registerResource(this);
         if (ENABLE_TABLE_META_CHECKER_ENABLE) {
+            //TODO ？？？？
             tableMetaExcutor.scheduleAtFixedRate(() -> {
                 try (Connection connection = dataSource.getConnection()) {
                     TableMetaCacheFactory.getTableMetaCache(DataSourceProxy.this.getDbType())
@@ -119,12 +128,13 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         }
 
         //Set the default branch type to 'AT' in the RootContext.
+        //设置默认的AT类型
         RootContext.setDefaultBranchType(this.getBranchType());
     }
 
     /**
      * Gets plain connection.
-     *
+     * 获取未增强的数据库连接
      * @return the plain connection
      * @throws SQLException the sql exception
      */

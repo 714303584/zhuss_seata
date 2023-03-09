@@ -49,7 +49,7 @@ public abstract class AbstractDataSourceProxy implements SeataDataSourceProxy {
 
     /**
      * Gets target data source.
-     *
+     * 获取数据源目标数据源
      * @return the target data source
      */
     @Override
@@ -67,11 +67,22 @@ public abstract class AbstractDataSourceProxy implements SeataDataSourceProxy {
         return targetDataSource.isWrapperFor(iface);
     }
 
+    /**
+     * 获取数据源的log写
+     * @return
+     * @throws SQLException
+     */
     @Override
     public PrintWriter getLogWriter() throws SQLException {
         return targetDataSource.getLogWriter();
     }
 
+
+    /**
+     * 设置log输出
+     * @param out
+     * @throws SQLException
+     */
     @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
         targetDataSource.setLogWriter(out);
