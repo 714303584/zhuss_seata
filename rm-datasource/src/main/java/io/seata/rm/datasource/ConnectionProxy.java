@@ -276,6 +276,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         try {
             //刷新undolog 主要作用是降undoLog记入数据库
             UndoLogManagerFactory.getUndoLogManager(this.getDbType()).flushUndoLogs(this);
+            //调用数据库连接提交事务
             targetConnection.commit();
         } catch (Throwable ex) {
             LOGGER.error("process connectionProxy commit error: {}", ex.getMessage(), ex);
