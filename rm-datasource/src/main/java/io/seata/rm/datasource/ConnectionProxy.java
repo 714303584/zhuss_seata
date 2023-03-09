@@ -117,6 +117,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
             return;
         }
         // Just check lock without requiring lock by now.
+        //
         try {
             boolean lockable = DefaultResourceManager.get().lockQuery(BranchType.AT,
                 getDataSourceProxy().getResourceId(), context.getXid(), lockKeys);
@@ -130,7 +131,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * Lock query.
-     *
+     * 锁查询
      * @param lockKeys the lock keys
      * @return the boolean
      * @throws SQLException the sql exception
@@ -167,7 +168,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * append sqlUndoLog
-     *
+     * 拼装 sql
      * @param sqlUndoLog the sql undo log
      */
     public void appendUndoLog(SQLUndoLog sqlUndoLog) {

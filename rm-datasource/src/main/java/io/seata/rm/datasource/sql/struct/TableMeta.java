@@ -30,6 +30,10 @@ import io.seata.rm.datasource.ColumnUtils;
 /**
  * The type Table meta.
  *
+ * 数据库表元信息
+ *  用于存储数据库表的元信息
+ *  存储数据库表里列的信息以及索引的信息
+ *
  * @author sharajava
  */
 public class TableMeta {
@@ -37,11 +41,19 @@ public class TableMeta {
 
     /**
      * key: column name
+     * key：是数据库表的列明
+     * vaule：是数据库表的列信息
+     *
+     * 数据库列信息的Map集合
      */
 
     private Map<String, ColumnMeta> allColumns = new LinkedHashMap<>();
     /**
+     *
+     * 存储数据库索引信息的Map集合
      * key: index name
+     * key：索引的名称
+     * value：索引的详情
      */
     private Map<String, IndexMeta> allIndexes = new LinkedHashMap<>();
 
@@ -131,7 +143,7 @@ public class TableMeta {
 
     /**
      * Gets primary key only name.
-     *
+     * 获取主键名称的集合
      * @return the primary key only name
      */
     @SuppressWarnings("serial")

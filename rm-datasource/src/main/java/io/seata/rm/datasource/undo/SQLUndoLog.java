@@ -23,18 +23,23 @@ import io.seata.sqlparser.SQLType;
 /**
  * The type Sql undo log.
  *
+ * undolog 的实体 用于接收sql执行前的镜像数据和执行后的镜像数据
+ *
  * @author sharajava
  */
 public class SQLUndoLog implements java.io.Serializable {
 
     private static final long serialVersionUID = -4160065043902060730L;
-
+    //SQL类型
     private SQLType sqlType;
 
+    //表名称
     private String tableName;
 
+    //sql操作前的数据镜像
     private TableRecords beforeImage;
 
+    //sql操作后的数据镜像
     private TableRecords afterImage;
 
     /**

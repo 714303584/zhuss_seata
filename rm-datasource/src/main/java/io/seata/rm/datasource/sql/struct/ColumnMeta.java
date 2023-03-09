@@ -19,7 +19,7 @@ import java.util.Objects;
 
 /**
  * The type Column meta.
- *
+ * 数据库列的元信息
  * @author sharajava
  */
 public class ColumnMeta {

@@ -38,6 +38,7 @@ import io.seata.rm.datasource.sql.serial.SerialArray;
 
 /**
  * The type Table records.
+ * //数据库表数据的记录
  *
  * @author sharajava
  */
@@ -45,6 +46,9 @@ public class TableRecords implements java.io.Serializable {
 
     private static final long serialVersionUID = 4441667803166771721L;
 
+    /**
+     * 表元信息
+     */
     private transient TableMeta tableMeta;
 
     //表名

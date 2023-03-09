@@ -17,13 +17,14 @@ package io.seata.sqlparser;
 
 /**
  * The enum Sql type.
- *
+ * sql类型枚举
  * @author sharajava
  */
 public enum SQLType {
 
     /**
      * Select sql type.
+     * 查询
      */
     SELECT(0),
     /**

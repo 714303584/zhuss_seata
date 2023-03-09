@@ -176,6 +176,10 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         return new ConnectionProxy(this, targetConnection);
     }
 
+    /**
+     * 获取资源组ID
+     * @return
+     */
     @Override
     public String getResourceGroupId() {
         return resourceGroupId;
