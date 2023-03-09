@@ -153,6 +153,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
 
     /**
      *  数据库连接池 -- 获取数据库连接
+     *  获取经过ConnectionProxy增强的数据库连接
      * @return
      * @throws SQLException
      */
@@ -162,6 +163,13 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         return new ConnectionProxy(this, targetConnection);
     }
 
+    /**
+     * 通过数据库用户名密码获取通过ConnectProxy增强的数据库连接
+     * @param username
+     * @param password
+     * @return
+     * @throws SQLException
+     */
     @Override
     public ConnectionProxy getConnection(String username, String password) throws SQLException {
         Connection targetConnection = targetDataSource.getConnection(username, password);
