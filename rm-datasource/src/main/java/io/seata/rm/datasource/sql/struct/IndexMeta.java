@@ -23,10 +23,11 @@ import org.apache.commons.lang.ArrayUtils;
 
 /**
  * The type Index meta.
- *
+ * 数据表的索引的元信息
  * @author sharajava
  */
 public class IndexMeta {
+    //索引的列
     private List<ColumnMeta> values = new ArrayList<ColumnMeta>();
 
     private boolean nonUnique;
