@@ -168,7 +168,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * append sqlUndoLog
-     * 拼装 sql
+     * 拼装 undolog
      * @param sqlUndoLog the sql undo log
      */
     public void appendUndoLog(SQLUndoLog sqlUndoLog) {
@@ -184,15 +184,21 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.appendLockKey(lockKey);
     }
 
+    /**
+     *  数据库操作事务提交
+     * @throws SQLException
+     */
     @Override
     public void commit() throws SQLException {
         try {
+            //TODO 搞明白事务的重试策略
             LOCK_RETRY_POLICY.execute(() -> {
                 doCommit();
                 return null;
             });
         } catch (SQLException e) {
             if (targetConnection != null && !getAutoCommit() && !getContext().isAutoCommitChanged()) {
+                //事务回滚
                 rollback();
             }
             throw e;
@@ -201,6 +207,8 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         }
     }
 
+    //事务保存点
+    //TODO 事务保存点存入context的作用
     @Override
     public Savepoint setSavepoint() throws SQLException {
         Savepoint savepoint = targetConnection.setSavepoint();
@@ -232,7 +240,9 @@ public class ConnectionProxy extends AbstractConnectionProxy {
      * @throws SQLException
      */
     private void doCommit() throws SQLException {
+        //事务是否在全局事务中
         if (context.inGlobalTransaction()) {
+            //处理全局事务
             processGlobalTransactionCommit();
         } else if (context.isGlobalLockRequire()) {
             processLocalCommitWithGlobalLocks();
@@ -252,16 +262,19 @@ public class ConnectionProxy extends AbstractConnectionProxy {
     }
 
     /**
-     * 处理事务提交 --
+     * 处理事务提交 -- 处理全局事务的提交
      * @throws SQLException
      */
     private void processGlobalTransactionCommit() throws SQLException {
         try {
+            //进行全局事务的注册
             register();
         } catch (TransactionException e) {
+            //注册事务异常
             recognizeLockKeyConflictException(e, context.buildLockKeys());
         }
         try {
+            //刷新undolog 主要作用是降undoLog记入数据库
             UndoLogManagerFactory.getUndoLogManager(this.getDbType()).flushUndoLogs(this);
             targetConnection.commit();
         } catch (Throwable ex) {
@@ -277,12 +290,16 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * 注册分支事务到tc
+     * //TODO 为啥提交时进行分支事务的注册
+     * //为啥不在开始的时候注册
      * @throws TransactionException
      */
     private void register() throws TransactionException {
+        //判断是否存在undolog 活着是否有全局锁
         if (!context.hasUndoLog() || !context.hasLockKey()) {
             return;
         }
+        //提交全局事务
         Long branchId = DefaultResourceManager.get().branchRegister(BranchType.AT, getDataSourceProxy().getResourceId(),
             null, context.getXid(), null, context.buildLockKeys());
         context.setBranchId(branchId);
@@ -338,6 +355,9 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         }
     }
 
+    /**
+     *
+     */
     public static class LockRetryPolicy {
         protected static final boolean LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT = ConfigurationFactory
             .getInstance().getBoolean(ConfigurationKeys.CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT, DEFAULT_CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT);

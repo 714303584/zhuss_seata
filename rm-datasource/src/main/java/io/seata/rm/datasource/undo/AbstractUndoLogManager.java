@@ -212,7 +212,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     /**
      * Flush undo logs.
-     *
+     * 刷新Undolog
      * @param cp the cp
      * @throws SQLException the sql exception
      */
@@ -222,15 +222,18 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
         if (!connectionContext.hasUndoLog()) {
             return;
         }
-
+        //获取全局事务Xid
         String xid = connectionContext.getXid();
+        //获取分支事务ID
         long branchId = connectionContext.getBranchId();
 
+        //分支事务的undolog构建
         BranchUndoLog branchUndoLog = new BranchUndoLog();
         branchUndoLog.setXid(xid);
         branchUndoLog.setBranchId(branchId);
+        //获取sqlUndolog
         branchUndoLog.setSqlUndoLogs(connectionContext.getUndoItems());
-
+        //UndoLogpase
         UndoLogParser parser = UndoLogParserFactory.getInstance();
         byte[] undoLogContent = parser.encode(branchUndoLog);
 
@@ -243,7 +246,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Flushing UNDO LOG: {}", new String(undoLogContent, Constants.DEFAULT_CHARSET));
         }
-
+        //插入undoLog
         insertUndoLogWithNormal(xid, branchId, buildContext(parser.getName(), compressorType), undoLogContent, cp.getTargetConnection());
     }
 
