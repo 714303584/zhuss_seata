@@ -87,7 +87,7 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
 
     /**
      * Execute auto commit false t.
-     *
+     * 执行一个自动提交为false的sql语句
      * @param args the args
      * @return the t
      * @throws Exception the exception
@@ -98,6 +98,7 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
         }
         //获取数据操作前镜像
         TableRecords beforeImage = beforeImage();
+        //进行sql语句执行
         T result = statementCallback.execute(statementProxy.getTargetStatement(), args);
         LOGGER.info("ifreeshare -- statementCallback.execute.result:"+result.toString());
         //获取数据操作后镜像
@@ -131,7 +132,7 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
 
     /**
      * Execute auto commit true t.
-     *
+     * 执行自动提交为true的sql执行
      * @param args the args
      * @return the t
      * @throws Throwable the throwable
