@@ -130,15 +130,23 @@ public class UpdateExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
                 selectSQLJoin.add(ColumnUtils.addEscape(columnName, getDbType()));
             }
         }
+        //返回sql语句
         return selectSQLJoin.toString();
     }
 
+    /**
+     * 获取更新后的镜像 -- 基本
+     * @param beforeImage the before image
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords afterImage(TableRecords beforeImage) throws SQLException {
         TableMeta tmeta = getTableMeta();
         if (beforeImage == null || beforeImage.size() == 0) {
             return TableRecords.empty(getTableMeta());
         }
+        //获取更新后的查询语句
         String selectSQL = buildAfterImageSQL(tmeta, beforeImage);
         ResultSet rs = null;
         try (PreparedStatement pst = statementProxy.getConnection().prepareStatement(selectSQL)) {
@@ -150,6 +158,13 @@ public class UpdateExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         }
     }
 
+    /**
+     * 拼装查询后的sql语句
+     * @param tableMeta
+     * @param beforeImage
+     * @return
+     * @throws SQLException
+     */
     private String buildAfterImageSQL(TableMeta tableMeta, TableRecords beforeImage) throws SQLException {
         StringBuilder prefix = new StringBuilder("SELECT ");
         String whereSql = SqlGenerateUtils.buildWhereConditionByPKs(tableMeta.getPrimaryKeyOnlyName(), beforeImage.pkRows().size(), getDbType());
