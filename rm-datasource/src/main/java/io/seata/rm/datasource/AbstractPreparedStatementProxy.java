@@ -43,6 +43,7 @@ import java.util.Map;
 
 /**
  * The type Abstract prepared statement proxy.
+ * 抽象的数据库执行代理
  *
  * @author sharajava
  */
@@ -60,6 +61,8 @@ public abstract class AbstractPreparedStatementProxy extends StatementProxy<Prep
 
     /**
      * Instantiates a new Abstract prepared statement proxy.
+     *
+     * 实例化一个新的抽象的执行代理
      *
      * @param connectionProxy the connection proxy
      * @param targetStatement the target statement
@@ -87,7 +90,7 @@ public abstract class AbstractPreparedStatementProxy extends StatementProxy<Prep
 
     /**
      * Gets params by index.
-     *
+     *  通过下标获取参数
      * @param index the index
      * @return the params by index
      */
@@ -97,7 +100,7 @@ public abstract class AbstractPreparedStatementProxy extends StatementProxy<Prep
 
     /**
      * Sets param by index.
-     *
+     * 通过下标设置参数
      * @param index the index
      * @param x     the x
      */

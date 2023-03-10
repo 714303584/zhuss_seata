@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  * The type Execute template.
- *
+ *  seata的执行模版
  * @author sharajava
  */
 public class ExecuteTemplate {
@@ -56,8 +56,8 @@ public class ExecuteTemplate {
 
     /**
      * Execute t.
-     *
-     * @param <T>               the type parameter
+     *  执行模板的执行代码
+     * @param <T>               the type parameter 参数
      * @param <S>               the type parameter
      * @param sqlRecognizers    the sql recognizer list
      * @param statementProxy    the statement proxy
@@ -80,30 +80,37 @@ public class ExecuteTemplate {
         String dbType = statementProxy.getConnectionProxy().getDbType();
         logger.info("ifreeshare -- ExecuteTemplate.execute.dbType:"+dbType);
         if (CollectionUtils.isEmpty(sqlRecognizers)) {
+            //获取sql识别器
             sqlRecognizers = SQLVisitorFactory.get(
                     statementProxy.getTargetSQL(),
                     dbType);
         }
         Executor<T> executor;
+        //执行器
         if (CollectionUtils.isEmpty(sqlRecognizers)) {
             executor = new PlainExecutor<>(statementProxy, statementCallback);
         } else {
+            //获取到sql执行器
             if (sqlRecognizers.size() == 1) {
                 SQLRecognizer sqlRecognizer = sqlRecognizers.get(0);
                 //获取sql类型
                 switch (sqlRecognizer.getSQLType()) {
                     case INSERT:
+                        //根据执行刑期获取相应的插入执行器
                         executor = EnhancedServiceLoader.load(InsertExecutor.class, dbType,
                                 new Class[]{StatementProxy.class, StatementCallback.class, SQLRecognizer.class},
                                 new Object[]{statementProxy, statementCallback, sqlRecognizer});
                         break;
                     case UPDATE:
+                        //更新执行器
                         executor = new UpdateExecutor<>(statementProxy, statementCallback, sqlRecognizer);
                         break;
                     case DELETE:
+                        //删除执行器
                         executor = new DeleteExecutor<>(statementProxy, statementCallback, sqlRecognizer);
                         break;
                     case SELECT_FOR_UPDATE:
+                        //查询执行器
                         executor = new SelectForUpdateExecutor<>(statementProxy, statementCallback, sqlRecognizer);
                         break;
                     default:
@@ -111,11 +118,13 @@ public class ExecuteTemplate {
                         break;
                 }
             } else {
+                //执行器
                 executor = new MultiExecutor<>(statementProxy, statementCallback, sqlRecognizers);
             }
         }
         T rs;
         try {
+            //通过执行器进行sql执行
             rs = executor.execute(args);
         } catch (Throwable ex) {
             if (!(ex instanceof SQLException)) {

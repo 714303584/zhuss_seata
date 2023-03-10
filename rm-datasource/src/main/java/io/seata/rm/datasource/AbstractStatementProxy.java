@@ -34,16 +34,19 @@ public abstract class AbstractStatementProxy<T extends Statement> implements Sta
 
     /**
      * The Connection proxy.
+     * 被代理的执行的连接代理
      */
     protected AbstractConnectionProxy connectionProxy;
 
     /**
      * The Target statement.
+     * 被代理的目标执行
      */
     protected T targetStatement;
 
     /**
      * The Target sql.
+     * 目标sql
      */
     protected String targetSQL;
 

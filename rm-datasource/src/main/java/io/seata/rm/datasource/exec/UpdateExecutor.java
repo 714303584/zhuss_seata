@@ -40,7 +40,7 @@ import io.seata.sqlparser.SQLUpdateRecognizer;
 
 /**
  * The type Update executor.
- *
+ * 更新sql的执行器
  * @param <T> the type parameter
  * @param <S> the type parameter
  * @author sharajava
@@ -65,33 +65,58 @@ public class UpdateExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         super(statementProxy, statementCallback, sqlRecognizer);
     }
 
+    /**
+     * 获取sql执行前的镜像
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords beforeImage() throws SQLException {
+        //sql参数
         ArrayList<List<Object>> paramAppenderList = new ArrayList<>();
+        //获取表的元数据
         TableMeta tmeta = getTableMeta();
+        //拼装查询语句
         String selectSQL = buildBeforeImageSQL(tmeta, paramAppenderList);
+        //获取查询语句并获取查询到的记录
         return buildTableRecords(tmeta, selectSQL, paramAppenderList);
     }
 
+    /**
+     * 拼装更新SQL前的sql查询语句
+     * @param tableMeta 表元数据
+     * @param paramAppenderList 参数
+     * @return
+     */
     private String buildBeforeImageSQL(TableMeta tableMeta, ArrayList<List<Object>> paramAppenderList) {
+        //sql更新语句解析器
         SQLUpdateRecognizer recognizer = (SQLUpdateRecognizer) sqlRecognizer;
+        //获取更新的列
         List<String> updateColumns = recognizer.getUpdateColumns();
+        //前置 select语句
         StringBuilder prefix = new StringBuilder("SELECT ");
+        // 后置语句
         StringBuilder suffix = new StringBuilder(" FROM ").append(getFromTableInSQL());
+        //获取where条件
         String whereCondition = buildWhereCondition(recognizer, paramAppenderList);
         if (StringUtils.isNotBlank(whereCondition)) {
             suffix.append(WHERE).append(whereCondition);
         }
+        //获取orderBy
         String orderBy = recognizer.getOrderBy();
         if (StringUtils.isNotBlank(orderBy)) {
             suffix.append(orderBy);
         }
+        //参数
         ParametersHolder parametersHolder = statementProxy instanceof ParametersHolder ? (ParametersHolder)statementProxy : null;
+        //获取limit语句
         String limit = recognizer.getLimit(parametersHolder, paramAppenderList);
         if (StringUtils.isNotBlank(limit)) {
             suffix.append(limit);
         }
+        //拼装for update 语句锁定要更新的数据
         suffix.append(" FOR UPDATE");
+        //拼装select
         StringJoiner selectSQLJoin = new StringJoiner(", ", prefix.toString(), suffix.toString());
         if (ONLY_CARE_UPDATE_COLUMNS) {
             if (!containsPK(updateColumns)) {
