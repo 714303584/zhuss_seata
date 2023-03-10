@@ -137,7 +137,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     /**
      * batch Delete undo log.
-     *
+     * 批量删除undoLog
      * @param xids xid
      * @param branchIds branch Id
      * @param conn connection

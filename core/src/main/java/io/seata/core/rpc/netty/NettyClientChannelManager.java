@@ -157,7 +157,7 @@ class NettyClientChannelManager {
 
     /**
      * Reconnect to remote server of current transaction service group.
-     *
+     * 重连远程服务器
      * @param transactionServiceGroup transaction service group
      */
     void reconnect(String transactionServiceGroup) {

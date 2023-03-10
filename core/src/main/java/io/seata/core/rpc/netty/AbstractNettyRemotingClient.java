@@ -67,7 +67,7 @@ import static io.seata.common.exception.FrameworkErrorCode.NoAvailableService;
 
 /**
  * The netty remoting client.
- *
+ * 基于netty实现的远程客户端
  * @author slievrly
  * @author zhaojun
  * @author zhangchenghui.dev@gmail.com
@@ -111,8 +111,12 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
      */
     private TransactionMessageHandler transactionMessageHandler;
 
+    /**
+     * 远程客户端初始化
+     */
     @Override
     public void init() {
+        //定时任务 == 进行重新连接
         timerExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -120,6 +124,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
             }
         }, SCHEDULE_DELAY_MILLS, SCHEDULE_INTERVAL_MILLS, TimeUnit.MILLISECONDS);
         if (NettyClientConfig.isEnableClientBatchSendRequest()) {
+            //线程池 merge进行
             mergeSendExecutorService = new ThreadPoolExecutor(MAX_MERGE_SEND_THREAD,
                 MAX_MERGE_SEND_THREAD,
                 KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,

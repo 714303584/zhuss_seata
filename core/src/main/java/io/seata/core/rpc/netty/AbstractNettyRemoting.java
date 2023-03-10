@@ -55,6 +55,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * The abstract netty remoting.
  *
+ * 抽象的netty方法
+ *
  * @author slievrly
  * @author zhangchenghui.dev@gmail.com
  */
@@ -63,11 +65,13 @@ public abstract class AbstractNettyRemoting implements Disposable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNettyRemoting.class);
     /**
      * The Timer executor.
+     * 超时处理线程池
      */
     protected final ScheduledExecutorService timerExecutor = new ScheduledThreadPoolExecutor(1,
         new NamedThreadFactory("timeoutChecker", 1, true));
     /**
      * The Message executor.
+     * 消息执行线程池
      */
     protected final ThreadPoolExecutor messageExecutor;
 
@@ -106,6 +110,7 @@ public abstract class AbstractNettyRemoting implements Disposable {
     protected final List<RpcHook> rpcHooks = EnhancedServiceLoader.loadAll(RpcHook.class);
 
     public void init() {
+        //定时处理超时消息
         timerExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -148,6 +153,9 @@ public abstract class AbstractNettyRemoting implements Disposable {
         destroyChannel(getAddressFromChannel(channel), channel);
     }
 
+    /**
+     * 
+     */
     @Override
     public void destroy() {
         timerExecutor.shutdown();

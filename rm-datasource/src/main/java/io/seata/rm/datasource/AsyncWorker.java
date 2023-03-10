@@ -45,7 +45,7 @@ import static io.seata.common.DefaultValues.DEFAULT_CLIENT_ASYNC_COMMIT_BUFFER_L
 
 /**
  * The type Async worker.
- *
+ *      异步工作者
  * @author sharajava
  */
 public class AsyncWorker {
@@ -59,19 +59,27 @@ public class AsyncWorker {
     private static final int ASYNC_COMMIT_BUFFER_LIMIT = ConfigurationFactory.getInstance().getInt(
         CLIENT_ASYNC_COMMIT_BUFFER_LIMIT, DEFAULT_CLIENT_ASYNC_COMMIT_BUFFER_LIMIT);
 
+    //数据元管理
     private final DataSourceManager dataSourceManager;
 
+    //2阶段队列
     private final BlockingQueue<Phase2Context> commitQueue;
 
     private final ScheduledExecutorService scheduledExecutor;
 
+    /**
+     * 实例化一个异步工作者
+     * @param dataSourceManager
+     */
     public AsyncWorker(DataSourceManager dataSourceManager) {
         this.dataSourceManager = dataSourceManager;
 
         LOGGER.info("Async Commit Buffer Limit: {}", ASYNC_COMMIT_BUFFER_LIMIT);
         commitQueue = new LinkedBlockingQueue<>(ASYNC_COMMIT_BUFFER_LIMIT);
 
+        //线程工厂
         ThreadFactory threadFactory = new NamedThreadFactory("AsyncWorker", 2, true);
+        //异步工作者所在工作线程池
         scheduledExecutor = new ScheduledThreadPoolExecutor(2, threadFactory);
         scheduledExecutor.scheduleAtFixedRate(this::doBranchCommitSafely, 10, 1000, TimeUnit.MILLISECONDS);
     }
@@ -94,6 +102,9 @@ public class AsyncWorker {
                 .thenRun(() -> addToCommitQueue(context));
     }
 
+    /**
+     * 分支事务安全提交
+     */
     void doBranchCommitSafely() {
         try {
             doBranchCommit();
@@ -102,6 +113,9 @@ public class AsyncWorker {
         }
     }
 
+    /**
+     * 分支事务提交
+     */
     private void doBranchCommit() {
         if (commitQueue.isEmpty()) {
             return;
@@ -148,6 +162,12 @@ public class AsyncWorker {
         splitByLimit.forEach(partition -> deleteUndoLog(conn, undoLogManager, partition));
     }
 
+    /**
+     * 进行undoLog删除
+     * @param conn
+     * @param undoLogManager
+     * @param contexts
+     */
     private void deleteUndoLog(Connection conn, UndoLogManager undoLogManager, List<Phase2Context> contexts) {
         Set<String> xids = new LinkedHashSet<>(contexts.size());
         Set<Long> branchIds = new LinkedHashSet<>(contexts.size());

@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 
 /**
  * The type Abstract undo executor.
+ * 抽象的undo执行器
  *
  * @author sharajava
  * @author Geng Zhang
@@ -85,6 +86,7 @@ public abstract class AbstractUndoExecutor {
     /**
      * Build undo sql string.
      *
+     *  构架Undolog的执行sql
      * @return the string
      */
     protected abstract String buildUndoSQL();
@@ -109,17 +111,21 @@ public abstract class AbstractUndoExecutor {
 
     /**
      * Execute on.
-     *
+     *  执行undoLog
      * @param conn the conn
      * @throws SQLException the sql exception
      */
     public void executeOn(Connection conn) throws SQLException {
+        //启动undolog
         if (IS_UNDO_DATA_VALIDATION_ENABLE && !dataValidationAndGoOn(conn)) {
             return;
         }
         try {
+            //构造undolog的sql
             String undoSQL = buildUndoSQL();
+            //连接执行获取undolog的sql
             PreparedStatement undoPST = conn.prepareStatement(undoSQL);
+            //获取undolog的数据行
             TableRecords undoRows = getUndoRows();
             for (Row undoRow : undoRows.getRows()) {
                 ArrayList<Field> undoValues = new ArrayList<>();
@@ -131,7 +137,6 @@ public abstract class AbstractUndoExecutor {
                 }
 
                 undoPrepare(undoPST, undoValues, pkValueList);
-
                 undoPST.executeUpdate();
             }
 
@@ -147,7 +152,7 @@ public abstract class AbstractUndoExecutor {
 
     /**
      * Undo prepare.
-     *
+     * 处理undolog
      * @param undoPST     the undo pst
      * @param undoValues  the undo values
      * @param pkValueList the pk value
@@ -218,19 +223,21 @@ public abstract class AbstractUndoExecutor {
 
     /**
      * Data validation.
-     *
+     * 数据验证 TODO 数据验证的作用
      * @param conn the conn
      * @return return true if data validation is ok and need continue undo, and return false if no need continue undo.
      * @throws SQLException the sql exception such as has dirty data
      */
     protected boolean dataValidationAndGoOn(Connection conn) throws SQLException {
 
-
+        //获取数据操作前镜像
         TableRecords beforeRecords = sqlUndoLog.getBeforeImage();
+        //获取数据操作后镜像
         TableRecords afterRecords = sqlUndoLog.getAfterImage();
 
         // Compare current data with before data
         // No need undo if the before data snapshot is equivalent to the after data snapshot.
+        //判断数据是否一致
         Result<Boolean> beforeEqualsAfterResult = DataCompareUtils.isRecordsEquals(beforeRecords, afterRecords);
         if (beforeEqualsAfterResult.getResult()) {
             if (LOGGER.isInfoEnabled()) {
@@ -242,6 +249,7 @@ public abstract class AbstractUndoExecutor {
         }
 
         // Validate if data is dirty.
+        //验证数据是否脏
         TableRecords currentRecords = queryCurrentRecords(conn);
         // compare with current data and after image.
         Result<Boolean> afterEqualsCurrentResult = DataCompareUtils.isRecordsEquals(afterRecords, currentRecords);
