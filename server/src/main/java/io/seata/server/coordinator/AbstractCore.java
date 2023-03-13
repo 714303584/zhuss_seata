@@ -50,7 +50,7 @@ import static io.seata.core.exception.TransactionExceptionCode.FailedToSendBranc
 
 /**
  * The type abstract core.
- *
+ *  分支类型的核心
  * @author ph3636
  */
 public abstract class AbstractCore implements Core {
@@ -70,6 +70,17 @@ public abstract class AbstractCore implements Core {
 
     public abstract BranchType getHandleBranchType();
 
+    /**
+     * 进行分支事务的注册
+     * @param branchType the branch type
+     * @param resourceId the resource id
+     * @param clientId   the client id
+     * @param xid        the xid
+     * @param applicationData the context
+     * @param lockKeys   the lock keys
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid,
                                String applicationData, String lockKeys) throws TransactionException {

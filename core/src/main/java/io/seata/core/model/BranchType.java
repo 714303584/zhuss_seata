@@ -17,13 +17,14 @@ package io.seata.core.model;
 
 /**
  * The enum Branch type.
- *
+ *  分支事务的类型
  * @author sharajava
  */
 public enum BranchType {
 
     /**
      * The At.
+     * AT类型
      */
     // AT Branch
     AT,
@@ -40,6 +41,7 @@ public enum BranchType {
 
     /**
      * The XA.
+     * XA 类型
      */
     XA;
 

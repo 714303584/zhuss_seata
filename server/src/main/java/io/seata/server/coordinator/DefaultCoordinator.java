@@ -280,13 +280,18 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Handle retry rollbacking.
+     * 回滚重试处理方法
      */
     protected void handleRetryRollbacking() {
+        //获取全局事务
+        //
         Collection<GlobalSession> rollbackingSessions = SessionHolder.getRetryRollbackingSessionManager().allSessions();
+        //
         if (CollectionUtils.isEmpty(rollbackingSessions)) {
             return;
         }
         long now = System.currentTimeMillis();
+        //
         SessionHelper.forEach(rollbackingSessions, rollbackingSession -> {
             try {
                 // prevent repeated rollback
@@ -353,21 +358,27 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Handle async committing.
+     * 异步提交事务
      */
     protected void handleAsyncCommitting() {
+        //获取正在提交的全局会话
         Collection<GlobalSession> asyncCommittingSessions = SessionHolder.getAsyncCommittingSessionManager()
             .allSessions();
         if (CollectionUtils.isEmpty(asyncCommittingSessions)) {
             return;
         }
+        //进行全局会话的提交
         SessionHelper.forEach(asyncCommittingSessions, asyncCommittingSession -> {
             try {
                 // Instruction reordering in DefaultCore#asyncCommit may cause this situation
+                //忽略正在提交的全局会话
                 if (GlobalStatus.AsyncCommitting != asyncCommittingSession.getStatus()) {
                     //The function of this 'return' is 'continue'.
                     return;
                 }
+                //异步提交会话
                 asyncCommittingSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
+                //
                 core.doGlobalCommit(asyncCommittingSession, true);
             } catch (TransactionException ex) {
                 LOGGER.error("Failed to async committing [{}] {} {}", asyncCommittingSession.getXid(), ex.getCode(), ex.getMessage(), ex);
@@ -377,23 +388,33 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Undo log delete.
+     * 进行undoLog删除
      */
     protected void undoLogDelete() {
+        //获取资源管理器的通道
+        //ChannelManager 通道管理器
         Map<String, Channel> rmChannels = ChannelManager.getRmChannels();
+
+        //资源通道为空 //进行返回
         if (rmChannels == null || rmChannels.isEmpty()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("no active rm channels to delete undo log");
             }
             return;
         }
+        //保存天数 -- 获取undoLog的保存天数
         short saveDays = CONFIG.getShort(ConfigurationKeys.TRANSACTION_UNDO_LOG_SAVE_DAYS,
             UndoLogDeleteRequest.DEFAULT_SAVE_DAYS);
+        //遍历资源管理器 进行undoLog的删除操作
         for (Map.Entry<String, Channel> channelEntry : rmChannels.entrySet()) {
             String resourceId = channelEntry.getKey();
+            //UndoLog删除请求 组装
             UndoLogDeleteRequest deleteRequest = new UndoLogDeleteRequest();
             deleteRequest.setResourceId(resourceId);
+            //设置Undolog的保存天数哦
             deleteRequest.setSaveDays(saveDays > 0 ? saveDays : UndoLogDeleteRequest.DEFAULT_SAVE_DAYS);
             try {
+                //向活跃的资源管理器发送undolog删除请求 -- 属于异步发送
                 remotingServer.sendAsyncRequest(channelEntry.getValue(), deleteRequest);
             } catch (Exception e) {
                 LOGGER.error("Failed to async delete undo log resourceId = {}, exception: {}", resourceId, e.getMessage());
@@ -407,12 +428,15 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
      */
     public void init() {
 
+        //回滚重试线程池 -- 定时执行回滚重试
         retryRollbacking.scheduleAtFixedRate(() -> {
             boolean lock = SessionHolder.retryRollbackingLock();
             if (lock) {
                 try {
+                    //进行回滚重试处理
                     handleRetryRollbacking();
                 } catch (Exception e) {
+                    //回滚重试异常
                     LOGGER.info("Exception retry rollbacking ... ", e);
                 } finally {
                     SessionHolder.unRetryRollbackingLock();
@@ -420,10 +444,13 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
             }
         }, 0, ROLLBACKING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
 
+        //提交重试线程池
         retryCommitting.scheduleAtFixedRate(() -> {
+            //
             boolean lock = SessionHolder.retryCommittingLock();
             if (lock) {
                 try {
+                    //进行提交重试处理
                     handleRetryCommitting();
                 } catch (Exception e) {
                     LOGGER.info("Exception retry committing ... ", e);
@@ -433,10 +460,12 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
             }
         }, 0, COMMITTING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
 
+        //异步提交线程池 固定速率进行异步提交
         asyncCommitting.scheduleAtFixedRate(() -> {
             boolean lock = SessionHolder.asyncCommittingLock();
             if (lock) {
                 try {
+                    //异步提交处理方法
                     handleAsyncCommitting();
                 } catch (Exception e) {
                     LOGGER.info("Exception async committing ... ", e);
@@ -446,10 +475,12 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
             }
         }, 0, ASYNC_COMMITTING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
 
+        //超时检查线程池  固定速率进行超时检查
         timeoutCheck.scheduleAtFixedRate(() -> {
             boolean lock = SessionHolder.txTimeoutCheckLock();
             if (lock) {
                 try {
+                    //进行超时检查
                     timeoutCheck();
                 } catch (Exception e) {
                     LOGGER.info("Exception timeout checking ... ", e);
@@ -459,6 +490,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
             }
         }, 0, TIMEOUT_RETRY_PERIOD, TimeUnit.MILLISECONDS);
 
+        //undoLog删除线程池  固定速率进行undoLog的删除
         undoLogDelete.scheduleAtFixedRate(() -> {
             boolean lock = SessionHolder.undoLogDeleteLock();
             if (lock) {

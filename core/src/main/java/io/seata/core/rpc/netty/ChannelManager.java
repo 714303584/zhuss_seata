@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * The type channel manager.
  *
+ *  通道管理器类型
  * @author slievrly
  */
 public class ChannelManager {

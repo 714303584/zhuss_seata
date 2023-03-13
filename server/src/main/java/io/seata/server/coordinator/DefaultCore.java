@@ -44,7 +44,7 @@ import static io.seata.server.session.BranchSessionHandler.CONTINUE;
 
 /**
  * The type Default core.
- *
+ * 默认核心
  * @author sharajava
  */
 public class DefaultCore implements Core {
@@ -53,6 +53,9 @@ public class DefaultCore implements Core {
 
     private EventBus eventBus = EventBusManager.get();
 
+    /**
+     * 根据不同的分支
+     */
     private static Map<BranchType, AbstractCore> coreMap = new ConcurrentHashMap<>();
 
     /**
@@ -61,8 +64,10 @@ public class DefaultCore implements Core {
      * @param remotingServer the remoting server
      */
     public DefaultCore(RemotingServer remotingServer) {
+        //获取所有的分支类型的核心
         List<AbstractCore> allCore = EnhancedServiceLoader.loadAll(AbstractCore.class,
             new Class[]{RemotingServer.class}, new Object[]{remotingServer});
+        //将分支核心根据处理的分支事务类型注册到核心集合里
         if (CollectionUtils.isNotEmpty(allCore)) {
             for (AbstractCore core : allCore) {
                 coreMap.put(core.getHandleBranchType(), core);
@@ -72,7 +77,7 @@ public class DefaultCore implements Core {
 
     /**
      * get core
-     *
+     * 根据分支事务的类型获取其核心
      * @param branchType the branchType
      * @return the core
      */
@@ -94,9 +99,21 @@ public class DefaultCore implements Core {
         coreMap.put(branchType, core);
     }
 
+    /**
+     * 分支事务注册
+     * @param branchType the branch type 分支事务类型 AT XA TCC SAGA
+     * @param resourceId the resource id    资源ID
+     * @param clientId   the client id  客户端id
+     * @param xid        the xid    全局事务ID
+     * @param applicationData the context
+     * @param lockKeys   the lock keys 锁标识
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid,
                                String applicationData, String lockKeys) throws TransactionException {
+        //以事务类型获取其处理
         return getCore(branchType).branchRegister(branchType, resourceId, clientId, xid,
             applicationData, lockKeys);
     }
@@ -113,22 +130,41 @@ public class DefaultCore implements Core {
         return getCore(branchType).lockQuery(branchType, resourceId, xid, lockKeys);
     }
 
+    /**
+     * 进行事务提交
+     * @param globalSession the global session
+     * @param branchSession the branch session
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchCommit(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
         return getCore(branchSession.getBranchType()).branchCommit(globalSession, branchSession);
     }
 
+    //进行事务回滚
     @Override
     public BranchStatus branchRollback(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
         return getCore(branchSession.getBranchType()).branchRollback(globalSession, branchSession);
     }
 
+    /**
+     * 开始全局事务
+     * @param applicationId           ID of the application who begins this transaction.
+     * @param transactionServiceGroup ID of the transaction service group.
+     * @param name                    Give a name to the global transaction.
+     * @param timeout                 Timeout of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException {
+        //全局事务会话获取
         GlobalSession session = GlobalSession.createGlobalSession(applicationId, transactionServiceGroup, name,
             timeout);
         MDC.put(RootContext.MDC_KEY_XID, session.getXid());
+        //session添加会话生命周期监听
         session.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
 
         session.begin();

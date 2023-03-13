@@ -44,6 +44,7 @@ import static io.seata.common.Constants.UNDOLOG_DELETE;
 
 /**
  * The type Session holder.
+ * session 持有者
  *
  * @author sharajava
  */
