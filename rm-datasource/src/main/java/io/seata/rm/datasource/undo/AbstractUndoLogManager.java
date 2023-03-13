@@ -389,6 +389,9 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                 // to prevent the local transaction of the first phase of other programs from being correctly submitted.
                 // See https://github.com/seata/seata/issues/489
 
+                //存在回滚操作
+                //进行undoLog删除
+                //进行undo事务提交
                 if (exists) {
                     LOGGER.info("删除UndoLog， xid：{}, branchId:{}", xid, branchId);
                     deleteUndoLog(xid, branchId, conn);
@@ -398,7 +401,10 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                             State.GlobalFinished.name());
                     }
                 } else {
+                    //不存在undoLog
+                    //插入undolog到全局事务完成
                     insertUndoLogWithGlobalFinished(xid, branchId, UndoLogParserFactory.getInstance(), conn);
+                    //进行事务提交
                     conn.commit();
                     if (LOGGER.isInfoEnabled()) {
                         LOGGER.info("xid {} branch {}, undo_log added with {}", xid, branchId,
@@ -407,6 +413,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                 }
 
                 return;
+                //异常操作
             } catch (SQLIntegrityConstraintViolationException e) {
                 // Possible undo_log has been inserted into the database by other processes, retrying rollback undo_log
                 if (LOGGER.isInfoEnabled()) {
@@ -425,6 +432,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                         branchId, e.getMessage()), e);
 
             } finally {
+                //最终处理资源释放
                 try {
                     if (rs != null) {
                         rs.close();
