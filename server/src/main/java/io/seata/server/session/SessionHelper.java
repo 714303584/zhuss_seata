@@ -169,7 +169,7 @@ public class SessionHelper {
 
     /**
      * Foreach branch sessions.
-     *
+     * 遍历分支事务会话
      * @param sessions the branch session
      * @param handler  the handler
      * @since 1.5.0
@@ -178,11 +178,14 @@ public class SessionHelper {
         Boolean result;
         for (BranchSession branchSession : sessions) {
             try {
+                //TODO slf4j的MDC的作用
                 MDC.put(RootContext.MDC_KEY_BRANCH_ID, String.valueOf(branchSession.getBranchId()));
+                //进行分支事务处理
                 result = handler.handle(branchSession);
                 if (result == null) {
                     continue;
                 }
+                //返回处理结果
                 return result;
             } finally {
                 MDC.remove(RootContext.MDC_KEY_BRANCH_ID);

@@ -187,9 +187,18 @@ public abstract class AbstractCore implements Core {
         return response.getBranchStatus();
     }
 
+    /**
+     * 进行回滚
+     * @param globalSession the global session 全局事务会话
+     * @param branchSession the branch session 分支事务会话
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchRollback(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
         try {
+            //构建事务回滚请求
+            //事务回滚请求
             BranchRollbackRequest request = new BranchRollbackRequest();
             request.setXid(branchSession.getXid());
             request.setBranchId(branchSession.getBranchId());
@@ -204,8 +213,19 @@ public abstract class AbstractCore implements Core {
         }
     }
 
+    /**
+     * 向指定TC发送回滚请求
+     * @param request
+     * @param globalSession
+     * @param branchSession
+     * @return
+     * @throws IOException
+     * @throws TimeoutException
+     */
     protected BranchStatus branchRollbackSend(BranchRollbackRequest request, GlobalSession globalSession,
                                               BranchSession branchSession) throws IOException, TimeoutException {
+
+
         BranchRollbackResponse response = (BranchRollbackResponse) remotingServer.sendSyncRequest(
                 branchSession.getResourceId(), branchSession.getClientId(), request);
         return response.getBranchStatus();
