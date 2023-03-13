@@ -42,12 +42,14 @@ import org.slf4j.LoggerFactory;
 public class Server {
     /**
      * The entry point of application.
-     *
+     * TC的启动入口
+     *  seata服务的启动入口
      * @param args the input arguments
      * @throws IOException the io exception
      */
     public static void main(String[] args) throws IOException {
         // get port first, use to logback.xml
+        //获取port
         int port = PortHelper.getPort(args);
         System.setProperty(ConfigurationKeys.SERVER_PORT, Integer.toString(port));
 
@@ -63,31 +65,44 @@ public class Server {
         }
 
         //initialize the parameter parser
+        //初始化参数解析
         //Note that the parameter parser should always be the first line to execute.
         //Because, here we need to parse the parameters needed for startup.
         ParameterParser parameterParser = new ParameterParser(args);
 
         //initialize the metrics
+        //指标管理器初始化
         MetricsManager.get().init();
-
+        //获取存储方式
         System.setProperty(ConfigurationKeys.STORE_MODE, parameterParser.getStoreMode());
 
+        //工作线程池初始化
+        //工作线程池-- 参数
+        //从nettserverconfig中获取
         ThreadPoolExecutor workingThreads = new ThreadPoolExecutor(NettyServerConfig.getMinServerPoolSize(),
                 NettyServerConfig.getMaxServerPoolSize(), NettyServerConfig.getKeepAliveTime(), TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(NettyServerConfig.getMaxTaskQueueSize()),
                 new NamedThreadFactory("ServerHandlerThread", NettyServerConfig.getMaxServerPoolSize()), new ThreadPoolExecutor.CallerRunsPolicy());
 
+        //初始化事务协调器服务
         NettyRemotingServer nettyRemotingServer = new NettyRemotingServer(workingThreads);
         //server port
+        //设置端口
         nettyRemotingServer.setListenPort(parameterParser.getPort());
+        //设置TC的唯一标志
         UUIDGenerator.init(parameterParser.getServerNode());
         //log store mode : file, db, redis
+        //日志记录方式
         SessionHolder.init(parameterParser.getStoreMode());
-
+        //默认的事务协调器 并指定通信服务模块
         DefaultCoordinator coordinator = new DefaultCoordinator(nettyRemotingServer);
+        //进行事务协调器初始化 -- {{{重点}}}
         coordinator.init();
+        //服务端设置处理器
+        //注意事务协调器实现了
         nettyRemotingServer.setHandler(coordinator);
         // register ShutdownHook
+        //注册关闭钩子
         ShutdownHook.getInstance().addDisposable(coordinator);
         ShutdownHook.getInstance().addDisposable(nettyRemotingServer);
 

@@ -235,6 +235,12 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         super.sendAsync(channel, rpcMsg);
     }
 
+    /**
+     * 进行消息处理注册
+     * @param requestCode
+     * @param processor   {@link RemotingProcessor}
+     * @param executor    thread pool
+     */
     @Override
     public void registerProcessor(int requestCode, RemotingProcessor processor, ExecutorService executor) {
         Pair<RemotingProcessor, ExecutorService> pair = new Pair<>(processor, executor);

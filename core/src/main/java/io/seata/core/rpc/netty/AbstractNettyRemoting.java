@@ -110,6 +110,9 @@ public abstract class AbstractNettyRemoting implements Disposable {
 
     protected final List<RpcHook> rpcHooks = EnhancedServiceLoader.loadAll(RpcHook.class);
 
+    /**
+     * 进行服务端初始化
+     */
     public void init() {
         //定时处理超时消息
         timerExecutor.scheduleAtFixedRate(new Runnable() {
@@ -280,9 +283,9 @@ public abstract class AbstractNettyRemoting implements Disposable {
 
     /**
      * Rpc message processing.
-     *  消息处理
+     *  RPC进行消息处理
      * @param ctx        Channel handler context.
-     * @param rpcMessage rpc message.
+     * @param rpcMessage rpc message. rpc消息
      * @throws Exception throws exception process message error.
      * @since 1.3.0
      */

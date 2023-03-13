@@ -68,6 +68,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
+ * 默认的事务协调员
  * The type Default coordinator.
  */
 public class DefaultCoordinator extends AbstractTCInboundHandler implements TransactionMessageHandler, Disposable {
@@ -136,9 +137,13 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
     private ScheduledThreadPoolExecutor undoLogDelete = new ScheduledThreadPoolExecutor(1,
         new NamedThreadFactory("UndoLogDelete", 1));
 
+    //远程服务实例 -- 基于Netty的远程服务
+    //进行远程消息的处理
+    //其中注册了不同消息的处理方式
     private RemotingServer remotingServer;
 
     private DefaultCore core;
+
 
     private EventBus eventBus = EventBusManager.get();
 
@@ -476,8 +481,14 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         return transactionRequest.handle(context);
     }
 
+    /**
+     * 进行响应处理
+     * @param response received response message
+     * @param context  context of the RPC
+     */
     @Override
     public void onResponse(AbstractResultMessage response, RpcContext context) {
+        //不做响应
         if (!(response instanceof AbstractTransactionResponse)) {
             throw new IllegalArgumentException();
         }

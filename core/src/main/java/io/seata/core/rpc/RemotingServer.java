@@ -33,7 +33,7 @@ public interface RemotingServer {
 
     /**
      * server send sync request.
-     *
+     * 发送一个同步请求
      * @param resourceId rm client resourceId
      * @param clientId   rm client id
      * @param msg        transaction message {@link io.seata.core.protocol}
@@ -44,7 +44,7 @@ public interface RemotingServer {
 
     /**
      * server send sync request.
-     *
+     * 服务端发送一个同步请求
      * @param channel client channel
      * @param msg     transaction message {@link io.seata.core.protocol}
      * @return client result message
@@ -54,7 +54,7 @@ public interface RemotingServer {
 
     /**
      * server send async request.
-     *
+     * 服务端发送一个异步请求
      * @param channel client channel
      * @param msg     transaction message {@link io.seata.core.protocol}
      */
@@ -62,7 +62,7 @@ public interface RemotingServer {
 
     /**
      * server send async response.
-     *
+     * 服务端发送一个异步响应
      * @param rpcMessage rpc message from client request
      * @param channel    client channel
      * @param msg        transaction message {@link io.seata.core.protocol}
@@ -71,7 +71,7 @@ public interface RemotingServer {
 
     /**
      * register processor
-     *
+     *  注册处理器
      * @param messageType {@link io.seata.core.protocol.MessageType}
      * @param processor   {@link RemotingProcessor}
      * @param executor    thread pool

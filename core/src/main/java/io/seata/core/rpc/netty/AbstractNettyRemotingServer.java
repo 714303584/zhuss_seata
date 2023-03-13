@@ -49,9 +49,13 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting 
 
     private final NettyServerBootstrap serverBootstrap;
 
+    /**
+     * 进行远程服务端初始化
+     */
     @Override
     public void init() {
         super.init();
+        //netty服务端启动
         serverBootstrap.start();
     }
 

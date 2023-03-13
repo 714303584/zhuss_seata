@@ -112,6 +112,7 @@ public interface MessageType {
     short TYPE_SEATA_MERGE = 59;
     /**
      * The constant TYPE_SEATA_MERGE_RESULT.
+     *
      */
     short TYPE_SEATA_MERGE_RESULT = 60;
 

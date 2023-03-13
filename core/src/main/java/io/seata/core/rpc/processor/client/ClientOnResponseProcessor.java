@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * process TC response message.
+ * 处理事务协调器返回的消息
  * <p>
  * process message type:
  * RM:
@@ -90,12 +91,12 @@ public class ClientOnResponseProcessor implements RemotingProcessor {
 
     @Override
     public void process(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
-
+        //远程调用消息不为空
         if(rpcMessage != null){
             byte messageType = rpcMessage.getMessageType();
             LOGGER.info("处理rpc请求消息：message：{}, messageType:{}",rpcMessage, messageType);
         }
-
+        //远程调用
         if (rpcMessage.getBody() instanceof MergeResultMessage) {
             MergeResultMessage results = (MergeResultMessage) rpcMessage.getBody();
             MergedWarpMessage mergeMessage = (MergedWarpMessage) mergeMsgMap.remove(rpcMessage.getId());
@@ -117,6 +118,7 @@ public class ClientOnResponseProcessor implements RemotingProcessor {
             } else {
                 if (rpcMessage.getBody() instanceof AbstractResultMessage) {
                     if (transactionMessageHandler != null) {
+                        //TM响应消息处理
                         transactionMessageHandler.onResponse((AbstractResultMessage) rpcMessage.getBody(), null);
                     }
                 }

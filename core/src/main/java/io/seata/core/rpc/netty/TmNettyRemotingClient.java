@@ -238,12 +238,17 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
         };
     }
 
+    /**
+     * 注册处理器
+     */
     private void registerProcessor() {
         // 1.registry TC response processor
         ClientOnResponseProcessor onResponseProcessor =
                 new ClientOnResponseProcessor(mergeMsgMap, super.getFutures(), getTransactionMessageHandler());
         LOGGER.info("注册请求处理消息");
+        //注册消息处理器
         super.registerProcessor(MessageType.TYPE_SEATA_MERGE_RESULT, onResponseProcessor, null);
+        //注册全局开始
         super.registerProcessor(MessageType.TYPE_GLOBAL_BEGIN_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_GLOBAL_COMMIT_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_GLOBAL_REPORT_RESULT, onResponseProcessor, null);
