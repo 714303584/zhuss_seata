@@ -145,6 +145,7 @@ public class DefaultCore implements Core {
     //进行事务回滚
     @Override
     public BranchStatus branchRollback(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
+        //根据不同的分支事务类型进行其回滚操作
         return getCore(branchSession.getBranchType()).branchRollback(globalSession, branchSession);
     }
 
@@ -327,37 +328,52 @@ public class DefaultCore implements Core {
         return globalSession.getStatus();
     }
 
+    /**
+     * 核心回滚方法
+     * @param globalSession the global session
+     * @param retrying      the retrying
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean doGlobalRollback(GlobalSession globalSession, boolean retrying) throws TransactionException {
         boolean success = true;
         // start rollback event
+        //eventBus发送事件
         eventBus.post(new GlobalTransactionEvent(globalSession.getTransactionId(),
                 GlobalTransactionEvent.ROLE_TC, globalSession.getTransactionName(),
                 globalSession.getApplicationId(),
                 globalSession.getTransactionServiceGroup(), globalSession.getBeginTime(),
                 null, globalSession.getStatus()));
 
+        //处理SAGA事务
         if (globalSession.isSaga()) {
+            //调用SAGA核心进行回滚
             success = getCore(BranchType.SAGA).doGlobalRollback(globalSession, retrying);
         } else {
             Boolean result = SessionHelper.forEach(globalSession.getReverseSortedBranches(), branchSession -> {
                 BranchStatus currentBranchStatus = branchSession.getStatus();
+                //第二阶段失败
                 if (currentBranchStatus == BranchStatus.PhaseOne_Failed) {
                     globalSession.removeBranch(branchSession);
                     return CONTINUE;
                 }
                 try {
+                    //进行事务回滚
                     BranchStatus branchStatus = branchRollback(globalSession, branchSession);
                     switch (branchStatus) {
                         case PhaseTwo_Rollbacked:
+                            //第二阶段已经回滚
                             globalSession.removeBranch(branchSession);
                             LOGGER.info("Rollback branch transaction successfully, xid = {} branchId = {}", globalSession.getXid(), branchSession.getBranchId());
                             return CONTINUE;
                         case PhaseTwo_RollbackFailed_Unretryable:
+                            //回滚失败
                             SessionHelper.endRollbackFailed(globalSession);
                             LOGGER.info("Rollback branch transaction fail and stop retry, xid = {} branchId = {}", globalSession.getXid(), branchSession.getBranchId());
                             return false;
                         default:
+                            //正在回滚的中
                             LOGGER.info("Rollback branch transaction fail and will retry, xid = {} branchId = {}", globalSession.getXid(), branchSession.getBranchId());
                             if (!retrying) {
                                 globalSession.queueToRetryRollback();
@@ -368,6 +384,7 @@ public class DefaultCore implements Core {
                     StackTraceLogger.error(LOGGER, ex,
                         "Rollback branch transaction exception, xid = {} branchId = {} exception = {}",
                         new String[] {globalSession.getXid(), String.valueOf(branchSession.getBranchId()), ex.getMessage()});
+                    //进行回滚
                     if (!retrying) {
                         globalSession.queueToRetryRollback();
                     }
@@ -392,9 +409,11 @@ public class DefaultCore implements Core {
             }
         }
         if (success) {
+
             SessionHelper.endRollbacked(globalSession);
 
             // rollbacked event
+            //进行回滚事件
             eventBus.post(new GlobalTransactionEvent(globalSession.getTransactionId(),
                     GlobalTransactionEvent.ROLE_TC, globalSession.getTransactionName(),
                     globalSession.getApplicationId(),

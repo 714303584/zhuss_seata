@@ -295,10 +295,12 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         SessionHelper.forEach(rollbackingSessions, rollbackingSession -> {
             try {
                 // prevent repeated rollback
+                //是否正在回滚 或者会话已经死亡
                 if (rollbackingSession.getStatus().equals(GlobalStatus.Rollbacking) && !rollbackingSession.isDeadSession()) {
                     //The function of this 'return' is 'continue'.
                     return;
                 }
+                //是否已经超时
                 if (isRetryTimeout(now, MAX_ROLLBACK_RETRY_TIMEOUT.toMillis(), rollbackingSession.getBeginTime())) {
                     if (ROLLBACK_RETRY_TIMEOUT_UNLOCK_ENABLE) {
                         rollbackingSession.clean();
@@ -311,7 +313,9 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                     //The function of this 'return' is 'continue'.
                     return;
                 }
+                //添加session生命周期的监听
                 rollbackingSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
+                //核心回滚方法
                 core.doGlobalRollback(rollbackingSession, true);
             } catch (TransactionException ex) {
                 LOGGER.info("Failed to retry rollbacking [{}] {} {}", rollbackingSession.getXid(), ex.getCode(), ex.getMessage());
@@ -321,6 +325,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Handle retry committing.
+     * 进行提交重试
      */
     protected void handleRetryCommitting() {
         Collection<GlobalSession> committingSessions = SessionHolder.getRetryCommittingSessionManager().allSessions();
@@ -331,10 +336,12 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         SessionHelper.forEach(committingSessions, committingSession -> {
             try {
                 // prevent repeated commit
+                //正在提交或者提交会话已经死亡则不再进行重试
                 if (committingSession.getStatus().equals(GlobalStatus.Committing) && !committingSession.isDeadSession()) {
                     //The function of this 'return' is 'continue'.
                     return;
                 }
+                //重试超时
                 if (isRetryTimeout(now, MAX_COMMIT_RETRY_TIMEOUT.toMillis(), committingSession.getBeginTime())) {
                     /**
                      * Prevent thread safety issues
@@ -344,7 +351,9 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                     //The function of this 'return' is 'continue'.
                     return;
                 }
+                //添加会话生命周期监听
                 committingSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
+                //默认核心进行提交
                 core.doGlobalCommit(committingSession, true);
             } catch (TransactionException ex) {
                 LOGGER.info("Failed to retry committing [{}] {} {}", committingSession.getXid(), ex.getCode(), ex.getMessage());
@@ -378,7 +387,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                 }
                 //异步提交会话
                 asyncCommittingSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
-                //
+                //核心代码提交全局事务
                 core.doGlobalCommit(asyncCommittingSession, true);
             } catch (TransactionException ex) {
                 LOGGER.error("Failed to async committing [{}] {} {}", asyncCommittingSession.getXid(), ex.getCode(), ex.getMessage(), ex);
