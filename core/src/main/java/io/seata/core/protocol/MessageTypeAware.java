@@ -17,6 +17,7 @@ package io.seata.core.protocol;
 
 /**
  * The interface Message type aware.
+ *  获取消息类型
  */
 public interface MessageTypeAware {
 

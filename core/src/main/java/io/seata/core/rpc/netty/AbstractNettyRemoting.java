@@ -103,6 +103,7 @@ public abstract class AbstractNettyRemoting implements Disposable {
 
     /**
      * This container holds all processors.
+     * 容器中的所有消息处理器
      * processor type {@link MessageType}
      */
     protected final HashMap<Integer/*MessageType*/, Pair<RemotingProcessor, ExecutorService>> processorTable = new HashMap<>(32);
@@ -154,7 +155,7 @@ public abstract class AbstractNettyRemoting implements Disposable {
     }
 
     /**
-     * 
+     *
      */
     @Override
     public void destroy() {
@@ -165,6 +166,8 @@ public abstract class AbstractNettyRemoting implements Disposable {
     /**
      * rpc sync request
      * Obtain the return result through MessageFuture blocking.
+     *
+     * 发送同步消息
      *
      * @param channel       netty channel
      * @param rpcMessage    rpc message
@@ -222,7 +225,7 @@ public abstract class AbstractNettyRemoting implements Disposable {
 
     /**
      * rpc async request.
-     *
+     * 发送异步消息
      * @param channel    netty channel
      * @param rpcMessage rpc message
      */
@@ -242,6 +245,12 @@ public abstract class AbstractNettyRemoting implements Disposable {
         });
     }
 
+    /**
+     * 构建消息
+     * @param msg
+     * @param messageType
+     * @return
+     */
     protected RpcMessage buildRequestMessage(Object msg, byte messageType) {
         LOGGER.info("ifreeshare -- AbstractNettyRemoting.buildRequestMessage[msg:{}, messageType:{}]!",
                 msg, messageType);
@@ -271,7 +280,7 @@ public abstract class AbstractNettyRemoting implements Disposable {
 
     /**
      * Rpc message processing.
-     *
+     *  消息处理
      * @param ctx        Channel handler context.
      * @param rpcMessage rpc message.
      * @throws Exception throws exception process message error.
@@ -281,15 +290,20 @@ public abstract class AbstractNettyRemoting implements Disposable {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("%s msgId:%s, body:%s", this, rpcMessage.getId(), rpcMessage.getBody()));
         }
+        //获取消息
         Object body = rpcMessage.getBody();
         if (body instanceof MessageTypeAware) {
             MessageTypeAware messageTypeAware = (MessageTypeAware) body;
+            //根据消息类型获取处理器
             final Pair<RemotingProcessor, ExecutorService> pair = this.processorTable.get((int) messageTypeAware.getTypeCode());
             if (pair != null) {
+                //获取消息处理服务
                 if (pair.getSecond() != null) {
                     try {
+                        //调消息
                         pair.getSecond().execute(() -> {
                             try {
+                                //调用消息处理
                                 pair.getFirst().process(ctx, rpcMessage);
                             } catch (Throwable th) {
                                 LOGGER.error(FrameworkErrorCode.NetDispatch.getErrCode(), th.getMessage(), th);

@@ -40,6 +40,7 @@ public interface ClientTableColumnsName {
 
     /**
      * The constant undo_log column name context
+     * undo_log 表的content列
      */
     String UNDO_LOG_CONTEXT = "context";
 

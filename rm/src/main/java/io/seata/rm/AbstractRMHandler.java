@@ -44,6 +44,13 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRMHandler.class);
 
+
+    /**
+     * RmHandler
+     * 分支提交handle
+     * @param request the request
+     * @return
+     */
     @Override
     public BranchCommitResponse handle(BranchCommitRequest request) {
         LOGGER.info("ifreeshare -- 虚拟RMHandler(AbstractRMHandler.handle(BranchCommitRequest request)):{}",
@@ -53,15 +60,22 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
             @Override
             public void execute(BranchCommitRequest request, BranchCommitResponse response)
                 throws TransactionException {
+                //进行分支事务提交
                 doBranchCommit(request, response);
             }
         }, request, response);
         return response;
     }
 
+    /**
+     * 分支回滚的处理
+     * @param request the request
+     * @return
+     */
     @Override
     public BranchRollbackResponse handle(BranchRollbackRequest request) {
         BranchRollbackResponse response = new BranchRollbackResponse();
+        //进行分支回滚处理
         exceptionHandleTemplate(new AbstractCallback<BranchRollbackRequest, BranchRollbackResponse>() {
             @Override
             public void execute(BranchRollbackRequest request, BranchRollbackResponse response)
@@ -110,7 +124,7 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
 
     /**
      * Do branch rollback.
-     *
+     *      进行分支事务回滚
      * @param request  the request
      * @param response the response
      * @throws TransactionException the transaction exception
@@ -126,6 +140,7 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Branch Rollbacking: " + xid + " " + branchId + " " + resourceId);
         }
+        //获取分支事务状态
         BranchStatus status = getResourceManager()
                 .branchRollback(request.getBranchType(), xid, branchId, resourceId,
             applicationData);
@@ -144,6 +159,12 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
      */
     protected abstract ResourceManager getResourceManager();
 
+    /**
+     * 进行远程请求的处理
+     * @param request received request message
+     * @param context context of the RPC
+     * @return
+     */
     @Override
     public AbstractResultMessage onRequest(AbstractMessage request, RpcContext context) {
         if (!(request instanceof AbstractTransactionRequestToRM)) {

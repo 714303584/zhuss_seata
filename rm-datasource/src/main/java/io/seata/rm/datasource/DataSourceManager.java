@@ -114,10 +114,21 @@ public class DataSourceManager extends AbstractResourceManager {
         return asyncWorker.branchCommit(xid, branchId, resourceId);
     }
 
+    /**
+     * 数据源进行事务回滚
+     * @param branchType      the branch type 分支类型
+     * @param xid             Transaction id. 全局事务Id
+     * @param branchId        Branch id.分支ID
+     * @param resourceId      Resource id.   资源ID
+     * @param applicationData Application data bind with this branch. 绑定到此分支上的应用程序数据
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchRollback(BranchType branchType, String xid, long branchId, String resourceId,
                                        String applicationData) throws TransactionException {
 
+        //获取资源
         DataSourceProxy dataSourceProxy = get(resourceId);
         if (dataSourceProxy == null) {
             throw new ShouldNeverHappenException();
@@ -125,6 +136,7 @@ public class DataSourceManager extends AbstractResourceManager {
         try {
             LOGGER.info("ifreeshare -- (数据源管理事务回滚.branchRollback(branchType:{},xid:{},branchId:{}))",
                     branchType,xid,branchId);
+            //获取UndoLog管理工厂 -- 进行undo操作
             UndoLogManagerFactory.getUndoLogManager(dataSourceProxy.getDbType()).undo(dataSourceProxy, xid, branchId);
         } catch (TransactionException te) {
             StackTraceLogger.info(LOGGER, te,

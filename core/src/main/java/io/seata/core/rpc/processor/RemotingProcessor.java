@@ -25,6 +25,8 @@ import io.seata.core.protocol.RpcMessage;
  * In order to separate the processing business from netty.
  * When netty starts, it will register processors to abstractNettyRemoting#processorTable.
  *
+ *  seata的远程处理者实现这个接口
+ *          -- 用来处理远程消息
  * @author zhangchenghui.dev@gmail.com
  * @since 1.3.0
  */

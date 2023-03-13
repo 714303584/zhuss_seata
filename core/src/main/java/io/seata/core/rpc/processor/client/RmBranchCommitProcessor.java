@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * process TC global commit command.
+ * 处理全局事务提交的指令
  * <p>
  * process message type:
  * {@link BranchCommitRequest}
@@ -48,6 +49,12 @@ public class RmBranchCommitProcessor implements RemotingProcessor {
         this.remotingClient = remotingClient;
     }
 
+    /**
+     * 进行消息处理
+     * @param ctx        Channel handler context.
+     * @param rpcMessage rpc message.
+     * @throws Exception
+     */
     @Override
     public void process(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
         String remoteAddress = NetUtil.toStringAddress(ctx.channel().remoteAddress());
@@ -55,11 +62,13 @@ public class RmBranchCommitProcessor implements RemotingProcessor {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("rm client handle branch commit process:" + msg);
         }
+        //获取rpc消息并且处理
         handleBranchCommit(rpcMessage, remoteAddress, (BranchCommitRequest) msg);
     }
 
     private void handleBranchCommit(RpcMessage request, String serverAddress, BranchCommitRequest branchCommitRequest) {
         BranchCommitResponse resultMessage;
+        //调用不同的事务类型的Handler进行消息处理
         resultMessage = (BranchCommitResponse) handler.onRequest(branchCommitRequest, null);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("branch commit result:" + resultMessage);

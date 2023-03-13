@@ -41,7 +41,7 @@ public interface UndoLogManager {
 
     /**
      * Undo.
-     *
+     * 进行undo操作， 全局事务的回滚操作
      * @param dataSourceProxy the data source proxy
      * @param xid             the xid
      * @param branchId        the branch id
