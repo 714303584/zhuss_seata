@@ -122,18 +122,19 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
     private static final boolean ROLLBACK_RETRY_TIMEOUT_UNLOCK_ENABLE = ConfigurationFactory.getInstance().getBoolean(
         ConfigurationKeys.ROLLBACK_RETRY_TIMEOUT_UNLOCK_ENABLE, false);
 
+    //事务回滚重试线程池
     private ScheduledThreadPoolExecutor retryRollbacking = new ScheduledThreadPoolExecutor(1,
         new NamedThreadFactory("RetryRollbacking", 1));
-
+    //事务提交重试线程池
     private ScheduledThreadPoolExecutor retryCommitting = new ScheduledThreadPoolExecutor(1,
         new NamedThreadFactory("RetryCommitting", 1));
-
+    //异步提交线程池
     private ScheduledThreadPoolExecutor asyncCommitting = new ScheduledThreadPoolExecutor(1,
         new NamedThreadFactory("AsyncCommitting", 1));
-
+    //超时检查线程池
     private ScheduledThreadPoolExecutor timeoutCheck = new ScheduledThreadPoolExecutor(1,
         new NamedThreadFactory("TxTimeoutCheck", 1));
-
+    //undolog删除线程池
     private ScheduledThreadPoolExecutor undoLogDelete = new ScheduledThreadPoolExecutor(1,
         new NamedThreadFactory("UndoLogDelete", 1));
 
@@ -402,8 +403,10 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Init.
+     * 事务协调器的初始化
      */
     public void init() {
+
         retryRollbacking.scheduleAtFixedRate(() -> {
             boolean lock = SessionHolder.retryRollbackingLock();
             if (lock) {
