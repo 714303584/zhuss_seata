@@ -29,6 +29,7 @@ import io.seata.server.session.GlobalSession;
 
 /**
  * @author funkye
+ * redis锁管理
  */
 @LoadLevel(name = "redis")
 public class RedisLockManager extends AbstractLockManager implements Initialize {
@@ -43,11 +44,23 @@ public class RedisLockManager extends AbstractLockManager implements Initialize 
         locker = new RedisLocker();
     }
 
+    /**
+     * 根据分支事务的session获取锁
+     *  TODO ？？ 直接返回锁么
+     * @param branchSession the branch session
+     * @return
+     */
     @Override
     public Locker getLocker(BranchSession branchSession) {
         return locker;
     }
 
+    /**
+     * 释放锁
+     * @param branchSession
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean releaseLock(BranchSession branchSession) throws TransactionException {
         try {

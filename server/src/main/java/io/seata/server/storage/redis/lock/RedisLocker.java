@@ -40,7 +40,7 @@ import static io.seata.common.Constants.ROW_LOCK_KEY_SPLIT_CHAR;
 
 /**
  * The redis lock store operation
- *
+ *redis锁的存储操作
  * @author funkye
  * @author wangzhongxiang
  */
@@ -49,39 +49,57 @@ public class RedisLocker extends AbstractLocker {
     private static final Integer SUCCEED = 1;
 
     private static final Integer FAILED = 0;
-
+    //seata的行级锁
     private static final String DEFAULT_REDIS_SEATA_ROW_LOCK_PREFIX = "SEATA_ROW_LOCK_";
 
+    //seata的全局锁
     private static final String DEFAULT_REDIS_SEATA_GLOBAL_LOCK_PREFIX = "SEATA_GLOBAL_LOCK";
 
+    //全局事务的XID
     private static final String XID = "xid";
 
+    //事务ID
     private static final String TRANSACTION_ID = "transactionId";
 
+    //分支事务ID
     private static final String BRANCH_ID = "branchId";
 
+    //资源ID
     private static final String RESOURCE_ID = "resourceId";
 
+    //锁定的表的名称
     private static final String TABLE_NAME = "tableName";
 
+    //PK ？？ TODO
     private static final String PK = "pk";
 
+    //行健
     private static final String ROW_KEY = "rowKey";
 
     /**
      * Instantiates a new Redis locker.
+     * 实例一个redis的锁
      */
     public RedisLocker() {
     }
 
+    /**
+     *获取锁
+     * @param rowLocks 行锁
+     * @return
+     */
     @Override
     public boolean acquireLock(List<RowLock> rowLocks) {
+        //行锁
         if (CollectionUtils.isEmpty(rowLocks)) {
             return true;
         }
+        //获取XID
         String needLockXid = rowLocks.get(0).getXid();
+        //获取分支ID
         Long branchId = rowLocks.get(0).getBranchId();
 
+        //获取jedis实例
         try (Jedis jedis = JedisPooledFactory.getJedisInstance()) {
             List<LockDO> needLockDOS = convertToLockDO(rowLocks);
             if (needLockDOS.size() > 1) {
