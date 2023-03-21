@@ -102,17 +102,22 @@ public class RedisLocker extends AbstractLocker {
         //获取jedis实例
         try (Jedis jedis = JedisPooledFactory.getJedisInstance()) {
             List<LockDO> needLockDOS = convertToLockDO(rowLocks);
+
             if (needLockDOS.size() > 1) {
                 needLockDOS = needLockDOS.stream().
                         filter(LambdaUtils.distinctByKey(LockDO::getRowKey))
                         .collect(Collectors.toList());
             }
+            //获取锁的健
             List<String> needLockKeys = new ArrayList<>();
             needLockDOS.forEach(lockDO -> needLockKeys.add(buildLockKey(lockDO.getRowKey())));
 
+            //获取redis的pipeline
             Pipeline pipeline1 = jedis.pipelined();
+            //获取所有Key的结果
             needLockKeys.stream().forEachOrdered(needLockKey -> pipeline1.hget(needLockKey, XID));
             List<String> existedLockInfos = (List<String>) (List) pipeline1.syncAndReturnAll();
+            //
             Map<String, LockDO> needAddLock = new HashMap<>(needLockKeys.size(), 1);
 
             for (int i = 0; i < needLockKeys.size(); i++) {

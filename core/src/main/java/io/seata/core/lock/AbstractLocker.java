@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type Abstract locker.
+ * 虚拟锁实现
  *
  * @author zhangsen
  */
@@ -42,7 +43,7 @@ public abstract class AbstractLocker implements Locker {
 
     /**
      * Convert to lock do list.
-     *
+     * 将行锁转换为锁实例
      * @param locks the locks
      * @return the list
      */
@@ -51,6 +52,7 @@ public abstract class AbstractLocker implements Locker {
         if (CollectionUtils.isEmpty(locks)) {
             return lockDOs;
         }
+        //简单进行转换
         for (RowLock rowLock : locks) {
             LockDO lockDO = new LockDO();
             lockDO.setBranchId(rowLock.getBranchId());
@@ -78,16 +80,31 @@ public abstract class AbstractLocker implements Locker {
             .toString();
     }
 
+    /**
+     * 清空昂所有锁
+     */
     @Override
     public void cleanAllLocks() {
 
     }
 
+    /**
+     * 释放锁
+     * @param xid      the xid
+     * @param branchId the branch id
+     * @return
+     */
     @Override
     public boolean releaseLock(String xid, Long branchId) {
         return false;
     }
 
+    /**
+     * 释放锁
+     * @param xid       the xid
+     * @param branchIds the branch ids
+     * @return
+     */
     @Override
     public boolean releaseLock(String xid, List<Long> branchIds) {
         return false;
