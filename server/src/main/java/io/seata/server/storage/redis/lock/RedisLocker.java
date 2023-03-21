@@ -139,6 +139,7 @@ public class RedisLocker extends AbstractLocker {
             Pipeline pipeline = jedis.pipelined();
             List<String> readyKeys = new ArrayList<>();
             needAddLock.forEach((key, value) -> {
+                //循环加锁
                 pipeline.hsetnx(key, XID, value.getXid());
                 pipeline.hsetnx(key, TRANSACTION_ID, value.getTransactionId().toString());
                 pipeline.hsetnx(key, BRANCH_ID, value.getBranchId().toString());
@@ -148,13 +149,17 @@ public class RedisLocker extends AbstractLocker {
                 pipeline.hset(key, PK, value.getPk());
                 readyKeys.add(key);
             });
+            //获取加锁的结果
             List<Integer> results = (List<Integer>) (List) pipeline.syncAndReturnAll();
             List<List<Integer>> partitions = Lists.partition(results, 7);
 
             ArrayList<String> success = new ArrayList<>(partitions.size());
+            //默认加锁成功
             Integer status = SUCCEED;
             for (int i = 0; i < partitions.size(); i++) {
+
                 if (Objects.equals(partitions.get(i).get(0),FAILED)) {
+                    //加锁失败
                     status = FAILED;
                 } else {
                     success.add(readyKeys.get(i));
@@ -162,42 +167,65 @@ public class RedisLocker extends AbstractLocker {
             }
 
             //If someone has failed,all the lockkey which has been added need to be delete.
+            //如果任意一个失败，锁将会失败
             if (FAILED.equals(status)) {
                 if (success.size() > 0) {
+                    //删除
                     jedis.del(success.toArray(new String[0]));
                 }
+                //返回获取锁失败
                 return false;
             }
+            //构建Xid锁的键
             String xidLockKey = buildXidLockKey(needLockXid);
             StringJoiner lockKeysString = new StringJoiner(ROW_LOCK_KEY_SPLIT_CHAR);
             needLockKeys.forEach(lockKeysString::add);
+            //设置key
             jedis.hset(xidLockKey, branchId.toString(), lockKeysString.toString());
+            //加锁成功
             return true;
         }
     }
 
+    /**
+     *  释放锁
+     *      删除行锁
+     * @param rowLocks
+     * @return
+     */
     @Override
     public boolean releaseLock(List<RowLock> rowLocks) {
         if (CollectionUtils.isEmpty(rowLocks)) {
             return true;
         }
+        //获取基础信息
         String currentXid = rowLocks.get(0).getXid();
         Long branchId = rowLocks.get(0).getBranchId();
+        //进行锁转换
         List<LockDO> needReleaseLocks = convertToLockDO(rowLocks);
         String[] needReleaseKeys = new String[needReleaseLocks.size()];
+        //构建行锁的Key
         for (int i = 0; i < needReleaseLocks.size(); i ++) {
             needReleaseKeys[i] = buildLockKey(needReleaseLocks.get(i).getRowKey());
         }
 
+        //进行行锁删除
         try (Jedis jedis = JedisPooledFactory.getJedisInstance()) {
             Pipeline pipelined = jedis.pipelined();
             pipelined.del(needReleaseKeys);
             pipelined.hdel(buildXidLockKey(currentXid), branchId.toString());
             pipelined.sync();
+            //返回释放成功
             return true;
         }
     }
 
+    /**
+     *
+     * @param xid       the xid
+     * @param branchIds the branch ids
+     * @return
+     */
     @Override
     public boolean releaseLock(String xid, List<Long> branchIds) {
         if (CollectionUtils.isEmpty(branchIds)) {
