@@ -46,7 +46,7 @@ public class RedisLockManager extends AbstractLockManager implements Initialize 
 
     /**
      * 根据分支事务的session获取锁
-     *  TODO ？？ 直接返回锁么
+     *  直接返回RedisLocker实例
      * @param branchSession the branch session
      * @return
      */
@@ -64,6 +64,7 @@ public class RedisLockManager extends AbstractLockManager implements Initialize 
     @Override
     public boolean releaseLock(BranchSession branchSession) throws TransactionException {
         try {
+            //使用Locker进行锁释放
             return getLocker().releaseLock(branchSession.getXid(), branchSession.getBranchId());
         } catch (Exception t) {
             LOGGER.error("unLock error, xid {}, branchId:{}", branchSession.getXid(), branchSession.getBranchId(), t);
@@ -71,14 +72,24 @@ public class RedisLockManager extends AbstractLockManager implements Initialize 
         }
     }
 
+    /**
+     * 释放全局锁
+     * @param globalSession the global session
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean releaseGlobalSessionLock(GlobalSession globalSession) throws TransactionException {
+        //根据全局会话 -- 获取分支会话
         List<BranchSession> branchSessions = globalSession.getBranchSessions();
+        //没有分支会话 释放成功
         if (CollectionUtils.isEmpty(branchSessions)) {
             return true;
         }
+        //获取分支ID
         List<Long> branchIds = branchSessions.stream().map(BranchSession::getBranchId).collect(Collectors.toList());
         try {
+            //进行锁释放
             return getLocker().releaseLock(globalSession.getXid(), branchIds);
         } catch (Exception t) {
             LOGGER.error("unLock globalSession error, xid:{} branchIds:{}", globalSession.getXid(),
