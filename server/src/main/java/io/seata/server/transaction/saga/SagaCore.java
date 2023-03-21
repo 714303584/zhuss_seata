@@ -193,6 +193,15 @@ public class SagaCore extends AbstractCore {
         return true;
     }
 
+    /**
+     * 全局事务上报
+     * @param globalSession the global session
+     *                      全局事务会话
+     * @param xid           Transaction id.
+     *                      事务ID
+     * @param globalStatus
+     * @throws TransactionException
+     */
     @Override
     public void doGlobalReport(GlobalSession globalSession, String xid, GlobalStatus globalStatus) throws TransactionException {
         if (GlobalStatus.Committed.equals(globalStatus)) {

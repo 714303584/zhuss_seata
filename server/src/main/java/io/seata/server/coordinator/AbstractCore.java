@@ -232,42 +232,103 @@ public abstract class AbstractCore implements Core {
         return response.getBranchStatus();
     }
 
+    /**
+     * 开启全局事务
+     * @param applicationId           ID of the application who begins this transaction.
+     * @param transactionServiceGroup ID of the transaction service group.
+     * @param name                    Give a name to the global transaction.
+     * @param timeout                 Timeout of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
             throws TransactionException {
         return null;
     }
 
+    /**
+     * 进行全局事务提交
+     * @param xid XID of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus commit(String xid) throws TransactionException {
         return null;
     }
 
+    /**
+     * 全局事务提交
+     * @param globalSession the global session
+     * @param retrying      the retrying
+     *                          是否进行重试中
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean doGlobalCommit(GlobalSession globalSession, boolean retrying) throws TransactionException {
         return true;
     }
 
+    /**
+     * 全局事务上报
+     * @param xid XID of the global transaction.
+     *              全局事务的XID
+     * @param globalStatus Status of the global transaction.
+     *                     全局事务的状态
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus globalReport(String xid, GlobalStatus globalStatus) throws TransactionException {
         return null;
     }
 
+    /**
+     * 全局事务回滚
+     * @param xid XID of the global transaction
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus rollback(String xid) throws TransactionException {
         return null;
     }
 
+    /**
+     * 全局事务回滚
+     * @param globalSession the global session
+     *                          全局事务会话
+     * @param retrying      the retrying
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean doGlobalRollback(GlobalSession globalSession, boolean retrying) throws TransactionException {
         return true;
     }
 
+    /**
+     * 获取事务状态
+     * @param xid XID of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus getStatus(String xid) throws TransactionException {
         return null;
     }
 
+    /**
+     * 全局事务上报
+     * @param globalSession the global session
+     *                      全局事务会话
+     * @param xid           Transaction id.
+     *                      事务ID
+     * @param globalStatus
+     * @throws TransactionException
+     */
     @Override
     public void doGlobalReport(GlobalSession globalSession, String xid, GlobalStatus globalStatus) throws TransactionException {
 

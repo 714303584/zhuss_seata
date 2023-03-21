@@ -436,6 +436,13 @@ public class DefaultCore implements Core {
         }
     }
 
+    /**
+     * 默认的事务上报
+     * @param xid XID of the global transaction.
+     * @param globalStatus Status of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus globalReport(String xid, GlobalStatus globalStatus) throws TransactionException {
         GlobalSession globalSession = SessionHolder.findGlobalSession(xid);
@@ -447,6 +454,13 @@ public class DefaultCore implements Core {
         return globalSession.getStatus();
     }
 
+    /**
+     * 全局事务上报
+     * @param globalSession the global session
+     * @param xid           Transaction id.
+     * @param globalStatus
+     * @throws TransactionException
+     */
     @Override
     public void doGlobalReport(GlobalSession globalSession, String xid, GlobalStatus globalStatus) throws TransactionException {
         if (globalSession.isSaga()) {
