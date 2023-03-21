@@ -60,7 +60,7 @@ public class DefaultCore implements Core {
 
     /**
      * get the Default core.
-     *
+     * 获取默认的TC核心
      * @param remotingServer the remoting server
      */
     public DefaultCore(RemotingServer remotingServer) {
@@ -118,15 +118,43 @@ public class DefaultCore implements Core {
             applicationData, lockKeys);
     }
 
+    /**
+     * 分支事务上报
+     * @param branchType      the branch type
+     *                          分支事务类型
+     * @param xid             the xid
+     *                         全局事务ID
+     * @param branchId        the branch id
+     *                        分支事务ID
+     * @param status          the status
+     *                         状态
+     * @param applicationData the application data
+     *
+     * @throws TransactionException
+     */
     @Override
     public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status,
                              String applicationData) throws TransactionException {
         getCore(branchType).branchReport(branchType, xid, branchId, status, applicationData);
     }
 
+    /**
+     * 锁查询
+     * @param branchType the branch type
+     *                   分支事务类型
+     * @param resourceId the resource id
+     *                   资源ID
+     * @param xid        the xid
+     *                   全局事务ID
+     * @param lockKeys   the lock keys
+     *                   锁主键
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean lockQuery(BranchType branchType, String resourceId, String xid, String lockKeys)
         throws TransactionException {
+        //根据分支事务类型获取核心 -- 进行锁查询
         return getCore(branchType).lockQuery(branchType, resourceId, xid, lockKeys);
     }
 
@@ -139,6 +167,7 @@ public class DefaultCore implements Core {
      */
     @Override
     public BranchStatus branchCommit(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
+        //根据事务类型获取事务核心 -- 进行分支事务提交
         return getCore(branchSession.getBranchType()).branchCommit(globalSession, branchSession);
     }
 
@@ -171,12 +200,19 @@ public class DefaultCore implements Core {
         session.begin();
 
         // transaction start event
+        //发送事件
         eventBus.post(new GlobalTransactionEvent(session.getTransactionId(), GlobalTransactionEvent.ROLE_TC,
             session.getTransactionName(), applicationId, transactionServiceGroup, session.getBeginTime(), null, session.getStatus()));
 
         return session.getXid();
     }
 
+    /**
+     *
+     * @param xid XID of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus commit(String xid) throws TransactionException {
         GlobalSession globalSession = SessionHolder.findGlobalSession(xid);

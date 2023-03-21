@@ -37,6 +37,15 @@ public class XACore extends AbstractCore {
         return BranchType.XA;
     }
 
+    /**
+     * XA仅进行分支事务上报
+     * @param branchType
+     * @param xid
+     * @param branchId
+     * @param status
+     * @param applicationData
+     * @throws TransactionException
+     */
     @Override
     public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status,
                              String applicationData) throws TransactionException {

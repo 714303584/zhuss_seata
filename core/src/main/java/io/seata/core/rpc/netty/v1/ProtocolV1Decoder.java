@@ -52,6 +52,8 @@ import java.util.Map;
  * <li>Head Length: include head data from magic code to head map. </li>
  * <li>Body Length: Full Length - Head Length</li>
  * </p>
+ *
+ * 进行协议的解码
  * https://github.com/seata/seata/issues/893
  *
  * @author Geng Zhang
@@ -63,13 +65,15 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolV1Decoder.class);
 
     public ProtocolV1Decoder() {
+
         // default is 8M
+        //默认帧大小为8M
         this(ProtocolConstants.MAX_FRAME_LENGTH);
     }
 
     public ProtocolV1Decoder(int maxFrameLength) {
         /*
-        int maxFrameLength,      
+        int maxFrameLength,     最大帧大小
         int lengthFieldOffset,  magic code is 2B, and version is 1B, and then FullLength. so value is 3
         int lengthFieldLength,  FullLength is int(4B). so values is 4
         int lengthAdjustment,   FullLength include all data and read 7 bytes before, so the left length is (FullLength-7). so values is -7
@@ -80,10 +84,14 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+        //netty的LengthFieldBasedFrameDecoder的解码方法
         Object decoded = super.decode(ctx, in);
+        //是一个字节缓存
         if (decoded instanceof ByteBuf) {
             ByteBuf frame = (ByteBuf) decoded;
             try {
+                //返回一个解析完的对象
+                //这里返回的是RpcMessage
                 return decodeFrame(frame);
             } catch (Exception e) {
                 LOGGER.error("Decode frame error!", e);
