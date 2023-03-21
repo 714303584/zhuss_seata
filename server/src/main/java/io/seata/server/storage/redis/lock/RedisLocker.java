@@ -221,25 +221,31 @@ public class RedisLocker extends AbstractLocker {
     }
 
     /**
-     *
-     * @param xid       the xid
-     * @param branchIds the branch ids
+     * 释放全局事务的锁
+     * @param xid       the xid 全局事务的xid
+     * @param branchIds the branch ids 分支事务的ID
      * @return
      */
     @Override
     public boolean releaseLock(String xid, List<Long> branchIds) {
+        //分支事务为空 释放锁成功
         if (CollectionUtils.isEmpty(branchIds)) {
             return true;
         }
+        //获取redis操作实例
         try (Jedis jedis = JedisPooledFactory.getJedisInstance()) {
+            //获取全局事务锁的KEY
             String xidLockKey = buildXidLockKey(xid);
+            //获取分支事务的ID
             String[] branchIdsArray = new String[branchIds.size()];
             for (int i = 0; i < branchIds.size(); i++) {
                 branchIdsArray[i] = branchIds.get(i).toString();
             }
+            //获取行键
             List<String> rowKeys = jedis.hmget(xidLockKey, branchIdsArray);
-
+            //行键不为空
             if (CollectionUtils.isNotEmpty(rowKeys)) {
+                //删除行键
                 Pipeline pipelined = jedis.pipelined();
                 pipelined.hdel(xidLockKey, branchIdsArray);
                 rowKeys.forEach(rowKeyStr -> {
@@ -254,10 +260,17 @@ public class RedisLocker extends AbstractLocker {
                 });
                 pipelined.sync();
             }
+            //释放成功
             return true;
         }
     }
 
+    /**
+     * 释放指定分支事务的锁
+     * @param xid      the xid
+     * @param branchId the branch id
+     * @return
+     */
     @Override
     public boolean releaseLock(String xid, Long branchId) {
         List<Long> branchIds = new ArrayList<>();
@@ -265,6 +278,11 @@ public class RedisLocker extends AbstractLocker {
         return releaseLock(xid, branchIds);
     }
 
+    /**
+     *
+     * @param rowLocks
+     * @return
+     */
     @Override
     public boolean isLockable(List<RowLock> rowLocks) {
         if (CollectionUtils.isEmpty(rowLocks)) {
@@ -285,10 +303,20 @@ public class RedisLocker extends AbstractLocker {
         }
     }
 
+    /**
+     * 构建全局事务锁Key
+     * @param xid
+     * @return
+     */
     private String buildXidLockKey(String xid) {
         return DEFAULT_REDIS_SEATA_GLOBAL_LOCK_PREFIX + xid;
     }
 
+    /**
+     * 构建行锁Key
+     * @param rowKey
+     * @return
+     */
     private String buildLockKey(String rowKey) {
         return DEFAULT_REDIS_SEATA_ROW_LOCK_PREFIX + rowKey;
     }
