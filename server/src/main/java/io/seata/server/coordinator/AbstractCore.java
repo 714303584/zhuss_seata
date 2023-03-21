@@ -57,6 +57,7 @@ public abstract class AbstractCore implements Core {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractCore.class);
 
+    //获取锁管理者
     protected LockManager lockManager = LockerManagerFactory.getLockManager();
 
     protected RemotingServer remotingServer;
