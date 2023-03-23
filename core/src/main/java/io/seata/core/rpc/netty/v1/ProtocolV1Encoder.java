@@ -52,6 +52,7 @@ import java.util.Map;
  * <li>Body Length: Full Length - Head Length</li>
  * </p>
  * https://github.com/seata/seata/issues/893
+ * 进行消息包的编码 -- 将seata的netty消息进行编码打包
  *
  * @author Geng Zhang
  * @see ProtocolV1Decoder
@@ -64,41 +65,61 @@ public class ProtocolV1Encoder extends MessageToByteEncoder {
     @Override
     public void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) {
         try {
+            //消息为seata的rpc消息
             if (msg instanceof RpcMessage) {
+                //转换为Rpc消息
                 RpcMessage rpcMessage = (RpcMessage) msg;
 
+                //获取总长度
+                //默认总长度
                 int fullLength = ProtocolConstants.V1_HEAD_LENGTH;
+                //获取头长度
                 int headLength = ProtocolConstants.V1_HEAD_LENGTH;
 
+                //获取消息类型
                 byte messageType = rpcMessage.getMessageType();
+                //写入
                 out.writeBytes(ProtocolConstants.MAGIC_CODE_BYTES);
+                //写入协议版本
                 out.writeByte(ProtocolConstants.VERSION);
                 // full Length(4B) and head length(2B) will fix in the end. 
                 out.writerIndex(out.writerIndex() + 6);
                 out.writeByte(messageType);
+                //写入Codec
                 out.writeByte(rpcMessage.getCodec());
+                //写入压缩方式
                 out.writeByte(rpcMessage.getCompressor());
+                //写入id
                 out.writeInt(rpcMessage.getId());
 
                 // direct write head with zero-copy
+                //写入消息头
                 Map<String, String> headMap = rpcMessage.getHeadMap();
                 if (headMap != null && !headMap.isEmpty()) {
+                    //编码消息头
                     int headMapBytesLength = HeadMapSerializer.getInstance().encode(headMap, out);
+                    //将消息头的长度加入
                     headLength += headMapBytesLength;
                     fullLength += headMapBytesLength;
                 }
 
                 byte[] bodyBytes = null;
+                //不为心跳请求 -- 心跳请求没有消息体
                 if (messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST
                         && messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE) {
                     // heartbeat has no body
+                    //获取序列化方法
                     Serializer serializer = EnhancedServiceLoader.load(Serializer.class, SerializerType.getByCode(rpcMessage.getCodec()).name());
+                    //序列化消息体
                     bodyBytes = serializer.serialize(rpcMessage.getBody());
+                    //获取压缩机
                     Compressor compressor = CompressorFactory.getCompressor(rpcMessage.getCompressor());
+                    //进行压缩
                     bodyBytes = compressor.compress(bodyBytes);
                     fullLength += bodyBytes.length;
                 }
 
+                //写入输出
                 if (bodyBytes != null) {
                     out.writeBytes(bodyBytes);
                 }
