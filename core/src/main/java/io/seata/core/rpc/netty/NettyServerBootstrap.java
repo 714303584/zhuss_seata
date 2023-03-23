@@ -43,6 +43,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Rpc server bootstrap.
  *
+ * seata的rpc服务框架
+ * 进行rpc响应
  * @author zhangchenghui.dev@gmail.com
  * @since 1.1.0
  */
@@ -88,7 +90,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
 
     /**
      * Add channel pipeline last.
-     *
+     * 添加处理逻辑
      * @param channel  the channel
      * @param handlers the handlers
      */
@@ -120,6 +122,9 @@ public class NettyServerBootstrap implements RemotingBootstrap {
         return listenPort;
     }
 
+    /**
+     * seata服务端的启用
+     */
     @Override
     public void start() {
         this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupWorker)
@@ -138,9 +143,10 @@ public class NettyServerBootstrap implements RemotingBootstrap {
                 @Override
                 public void initChannel(SocketChannel ch) {
                     ch.pipeline().addLast(new IdleStateHandler(nettyServerConfig.getChannelMaxReadIdleSeconds(), 0, 0))
-                        .addLast(new ProtocolV1Decoder())
-                        .addLast(new ProtocolV1Encoder());
+                        .addLast(new ProtocolV1Decoder()) //设置包解析
+                        .addLast(new ProtocolV1Encoder());  //设置包加密
                     if (channelHandlers != null) {
+                        //
                         addChannelPipelineLast(ch, channelHandlers);
                     }
 

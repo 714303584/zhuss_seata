@@ -160,6 +160,8 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting 
 
     /**
      * The type ServerHandler.
+     *
+     * seata服务器的的消息处理者
      */
     @ChannelHandler.Sharable
     class ServerHandler extends ChannelDuplexHandler {
@@ -173,9 +175,11 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting 
          */
         @Override
         public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+            //如果消息不为Rpc消息 直接进行返回
             if (!(msg instanceof RpcMessage)) {
                 return;
             }
+            //处理rpc消息
             processMessage(ctx, (RpcMessage) msg);
         }
 

@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The type Enhanced service loader.
  *
+ * seata的loader
  * @author slievrly
  */
 public class EnhancedServiceLoader {

@@ -17,6 +17,9 @@ package io.seata.core.serializer;
 
 /**
  * The enum serialize type.
+ * 序列化类型
+ *
+ * 定义了seata的序列化类型
  *
  * @author leizhiyuan
  */
@@ -26,6 +29,7 @@ public enum SerializerType {
      * The seata.
      * <p>
      * Math.pow(2, 0)
+     * Seata的序列化类型
      */
     SEATA((byte)0x1),
 
@@ -33,6 +37,7 @@ public enum SerializerType {
      * The protobuf.
      * <p>
      * Math.pow(2, 1)
+     *
      */
     PROTOBUF((byte)0x2),
 

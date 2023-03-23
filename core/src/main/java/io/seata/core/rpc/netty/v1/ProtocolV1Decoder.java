@@ -103,24 +103,38 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
         return decoded;
     }
 
+    /**
+     * 进行数据包的解析
+     * @param frame
+     * @return
+     */
     public Object decodeFrame(ByteBuf frame) {
+        //第一个byte
         byte b0 = frame.readByte();
+        // 第二个byte
         byte b1 = frame.readByte();
+        //进行Magic验证
         if (ProtocolConstants.MAGIC_CODE_BYTES[0] != b0
                 || ProtocolConstants.MAGIC_CODE_BYTES[1] != b1) {
             throw new IllegalArgumentException("Unknown magic code: " + b0 + ", " + b1);
         }
-
+        //获取协议版本号
         byte version = frame.readByte();
         // TODO  check version compatible here
-
+        //获取数据大小
         int fullLength = frame.readInt();
+        //获取头长度
         short headLength = frame.readShort();
+        //
         byte messageType = frame.readByte();
+        //
         byte codecType = frame.readByte();
+        //
         byte compressorType = frame.readByte();
+        //获取请求ID
         int requestId = frame.readInt();
 
+        //组装rpc消息
         RpcMessage rpcMessage = new RpcMessage();
         rpcMessage.setCodec(codecType);
         rpcMessage.setId(requestId);
@@ -129,6 +143,7 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
 
 
         // direct read head with zero-copy
+        //直接获取协议头
         int headMapLength = headLength - ProtocolConstants.V1_HEAD_LENGTH;
         if (headMapLength > 0) {
             Map<String, String> map = HeadMapSerializer.getInstance().decode(frame, headMapLength);
@@ -136,17 +151,29 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
         }
 
         // read body
+        //获取协议数据
         if (messageType == ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST) {
+            //心跳请求
+            //ping
             rpcMessage.setBody(HeartbeatMessage.PING);
         } else if (messageType == ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE) {
+            //心跳响应
+            //pong
             rpcMessage.setBody(HeartbeatMessage.PONG);
         } else {
+            //获取具体消息内容
+            //获取消息体长度
             int bodyLength = fullLength - headLength;
             if (bodyLength > 0) {
+                //
                 byte[] bs = new byte[bodyLength];
                 frame.readBytes(bs);
+                //根据压缩类型获取
                 Compressor compressor = CompressorFactory.getCompressor(compressorType);
+                //进行消息体的解压
                 bs = compressor.decompress(bs);
+
+                //获取序列化器
                 Serializer serializer = EnhancedServiceLoader.load(Serializer.class, SerializerType.getByCode(rpcMessage.getCodec()).name());
                 rpcMessage.setBody(serializer.deserialize(bs));
             }

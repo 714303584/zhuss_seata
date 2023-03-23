@@ -290,12 +290,15 @@ public abstract class AbstractNettyRemoting implements Disposable {
      * @since 1.3.0
      */
     protected void processMessage(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
+        //远端消息处理
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("%s msgId:%s, body:%s", this, rpcMessage.getId(), rpcMessage.getBody()));
         }
         //获取消息
         Object body = rpcMessage.getBody();
+        //消息体
         if (body instanceof MessageTypeAware) {
+            //获取消息类型
             MessageTypeAware messageTypeAware = (MessageTypeAware) body;
             //根据消息类型获取处理器
             final Pair<RemotingProcessor, ExecutorService> pair = this.processorTable.get((int) messageTypeAware.getTypeCode());
