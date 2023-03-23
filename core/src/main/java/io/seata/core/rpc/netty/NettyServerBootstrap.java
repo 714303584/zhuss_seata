@@ -154,6 +154,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
             });
 
         try {
+            //启动服务框架
             ChannelFuture future = this.serverBootstrap.bind(listenPort).sync();
             LOGGER.info("Server started, listen port: {}", listenPort);
             RegistryFactory.getInstance().register(new InetSocketAddress(XID.getIpAddress(), XID.getPort()));
@@ -165,6 +166,9 @@ public class NettyServerBootstrap implements RemotingBootstrap {
 
     }
 
+    /**
+     * 关闭方法
+     */
     @Override
     public void shutdown() {
         try {

@@ -18,6 +18,8 @@ package io.seata.core.rpc;
 /**
  * The boot strap of the remoting process, generally there are client and server implementation classes
  *
+ * 远程框架
+ *
  * @author zhangchenghui.dev@gmail.com
  * @since 1.3.0
  */

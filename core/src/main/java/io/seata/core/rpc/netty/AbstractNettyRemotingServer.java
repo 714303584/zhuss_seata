@@ -209,6 +209,10 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting 
             super.channelInactive(ctx);
         }
 
+        /**
+         * 处理消息断开
+         * @param ctx
+         */
         private void handleDisconnect(ChannelHandlerContext ctx) {
             final String ipAndPort = NetUtil.toStringAddress(ctx.channel().remoteAddress());
             RpcContext rpcContext = ChannelManager.getContextFromIdentified(ctx.channel());
