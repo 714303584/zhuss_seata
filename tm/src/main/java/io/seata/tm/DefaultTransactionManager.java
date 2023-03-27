@@ -82,6 +82,7 @@ public class DefaultTransactionManager implements TransactionManager {
 
     /**
      * 进行事务提交
+     * 发起提交请求 -- 进行全局事务的提交
      * @param xid XID of the global transaction.
      * @return
      * @throws TransactionException

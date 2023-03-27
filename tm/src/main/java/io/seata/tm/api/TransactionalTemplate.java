@@ -160,6 +160,7 @@ public class TransactionalTemplate {
                 return rs;
             } finally {
                 //5. clear
+                //
                 resumeGlobalLockConfig(previousConfig);
                 triggerAfterCompletion();
                 cleanUp();

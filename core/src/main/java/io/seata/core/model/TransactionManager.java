@@ -45,7 +45,7 @@ public interface TransactionManager {
 
     /**
      * Global commit.
-     *
+     * 全局事务进行提交
      * @param xid XID of the global transaction.
      * @return Status of the global transaction after committing.
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown

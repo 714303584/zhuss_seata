@@ -136,6 +136,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
     public void commit() throws TransactionException {
         if (role == GlobalTransactionRole.Participant) {
             // Participant has no responsibility of committing
+            //全局事务的参与者没有提交全局事务的责任
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Ignore Commit(): just involved in global transaction [{}]", xid);
             }
@@ -148,6 +149,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
             while (retry > 0) {
                 try {
                     //TM进行事务提交
+                    //使用TM进行全局事务的提交
                     status = transactionManager.commit(xid);
                     break;
                 } catch (Throwable ex) {

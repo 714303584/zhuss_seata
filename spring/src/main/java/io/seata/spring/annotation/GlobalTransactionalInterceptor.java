@@ -205,6 +205,13 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         });
     }
 
+    /**
+     * 处理全局事务
+     * @param methodInvocation 全局事务方法
+     * @param globalTrxAnno
+     * @return
+     * @throws Throwable
+     */
     Object handleGlobalTransaction(final MethodInvocation methodInvocation,
         final GlobalTransactional globalTrxAnno) throws Throwable {
         LOGGER.info("ifreeshare -- GlobalLockExecutor.execute() MethodInvocation:{},GlobalTransactional:{}",

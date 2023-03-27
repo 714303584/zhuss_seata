@@ -263,11 +263,13 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * 处理事务提交 -- 处理全局事务的提交
+     * 处理全局事务提交
      * @throws SQLException
      */
     private void processGlobalTransactionCommit() throws SQLException {
         try {
             //进行全局事务的注册
+            //提交前进行分支事务注册
             register();
         } catch (TransactionException e) {
             //注册事务异常
@@ -280,6 +282,8 @@ public class ConnectionProxy extends AbstractConnectionProxy {
             targetConnection.commit();
         } catch (Throwable ex) {
             LOGGER.error("process connectionProxy commit error: {}", ex.getMessage(), ex);
+            //事务提交失败 -- 进行分支事务上报
+            //上报成功由TC进行分支事务回滚
             report(false);
             throw new SQLException(ex);
         }
@@ -347,7 +351,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
     }
 
     /**
-     * 上报
+     * 进行分支事务上报
      * @param commitDone
      * @throws SQLException
      */

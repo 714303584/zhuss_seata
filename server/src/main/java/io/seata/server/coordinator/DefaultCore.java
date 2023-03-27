@@ -210,18 +210,19 @@ public class DefaultCore implements Core {
     /**
      *
      * @param xid XID of the global transaction.
+     *              进行全局事务的提交
      * @return
      * @throws TransactionException
      */
     @Override
     public GlobalStatus commit(String xid) throws TransactionException {
+        //事务的session
         GlobalSession globalSession = SessionHolder.findGlobalSession(xid);
         if (globalSession == null) {
             return GlobalStatus.Finished;
         }
         globalSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
         // just lock changeStatus
-
         boolean shouldCommit = SessionHolder.lockAndExecute(globalSession, () -> {
             // Highlight: Firstly, close the session, then no more branch can be registered.
             globalSession.closeAndClean();
