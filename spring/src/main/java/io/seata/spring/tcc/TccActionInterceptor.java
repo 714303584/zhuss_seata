@@ -40,7 +40,7 @@ import static io.seata.common.DefaultValues.DEFAULT_DISABLE_GLOBAL_TRANSACTION;
 
 /**
  * TCC Interceptor
- *
+ * TCC（try-confirm-cancel）事务的拦截器
  * @author zhangsen
  */
 public class TccActionInterceptor implements MethodInterceptor, ConfigurationChangeListener {
@@ -72,30 +72,48 @@ public class TccActionInterceptor implements MethodInterceptor, ConfigurationCha
         this.remotingDesc = remotingDesc;
     }
 
+    /**
+     * TCC事务方法的执行
+     * @param invocation 需要执行的TCC方法
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object invoke(final MethodInvocation invocation) throws Throwable {
-        if (!RootContext.inGlobalTransaction() || disable || RootContext.inSagaBranch()) {
+        // 判定是否在全局事务中
+        if (!RootContext.inGlobalTransaction() ||  //不在全局事务中
+                disable //  未启用
+                || RootContext.inSagaBranch() //本地消息表
+        ) {
             //not in transaction
+            //不在全局事务中
             return invocation.proceed();
         }
+        //获取需要执行的方法
         Method method = getActionInterfaceMethod(invocation);
+        //获取两阶段业务
         TwoPhaseBusinessAction businessAction = method.getAnnotation(TwoPhaseBusinessAction.class);
         //try method
+        //重试方法
         if (businessAction != null) {
             //save the xid
             String xid = RootContext.getXID();
             //save the previous branchType
+            //获取
             BranchType previousBranchType = RootContext.getBranchType();
             //if not TCC, bind TCC branchType
+            //如果是TCC 绑定分支事务类型为TCC
             if (BranchType.TCC != previousBranchType) {
                 RootContext.bindBranchType(BranchType.TCC);
             }
             try {
                 Object[] methodArgs = invocation.getArguments();
                 //Handler the TCC Aspect
+                // 处理TCC切面
                 Map<String, Object> ret = actionInterceptorHandler.proceed(method, methodArgs, xid, businessAction,
                         invocation::proceed);
                 //return the final result
+                //返回执行结果
                 return ret.get(Constants.TCC_METHOD_RESULT);
             }
             finally {
@@ -112,7 +130,7 @@ public class TccActionInterceptor implements MethodInterceptor, ConfigurationCha
 
     /**
      * get the method from interface
-     *
+     * 获取方法
      * @param invocation the invocation
      * @return the action interface method
      */

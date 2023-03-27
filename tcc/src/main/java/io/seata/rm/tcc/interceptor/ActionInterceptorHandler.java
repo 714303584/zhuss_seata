@@ -47,7 +47,7 @@ public class ActionInterceptorHandler {
 
     /**
      * Handler the TCC Aspect
-     *
+     * 处理TCC -- 对TCC注解进行增强
      * @param method         the method
      * @param arguments      the arguments
      * @param businessAction the business action
@@ -70,6 +70,7 @@ public class ActionInterceptorHandler {
 
         LOGGER.info("执行TCC分布式事务拦截。TCC分布式事务上下文：{}",actionContext.toString());
         //Creating Branch Record
+        //创建分支事务记录
         String branchId = doTccActionLogStore(method, arguments, businessAction, actionContext);
         actionContext.setBranchId(branchId);
         //MDC put branchId
@@ -87,15 +88,17 @@ public class ActionInterceptorHandler {
             argIndex++;
         }
         //the final parameters of the try method
+        ///将最终参数放入try方法
         ret.put(Constants.TCC_METHOD_ARGUMENTS, arguments);
         //the final result
+        //获取
         ret.put(Constants.TCC_METHOD_RESULT, targetCallback.execute());
         return ret;
     }
 
     /**
      * Creating Branch Record
-     *
+     *  创建分支事务记录
      * @param method         the method
      * @param arguments      the arguments
      * @param businessAction the business action
@@ -104,13 +107,16 @@ public class ActionInterceptorHandler {
      */
     protected String doTccActionLogStore(Method method, Object[] arguments, TwoPhaseBusinessAction businessAction,
                                          BusinessActionContext actionContext) {
+        //操作名称
         String actionName = actionContext.getActionName();
+        //全局事务ID
         String xid = actionContext.getXid();
         //
         Map<String, Object> context = fetchActionRequestContext(method, arguments);
         context.put(Constants.ACTION_START_TIME, System.currentTimeMillis());
 
         //init business context
+        //初始化业务上下文
         initBusinessContext(context, method, businessAction);
         //Init running environment context
         initFrameworkContext(context);
@@ -124,6 +130,7 @@ public class ActionInterceptorHandler {
             //registry branch record
             //使用RM注册分支事务
             LOGGER.info("使用RM注册TCC分支事务");
+            //进行分支事务注册
             Long branchId = DefaultResourceManager.get().branchRegister(BranchType.TCC, actionName, null, xid,
                 applicationContextStr, null);
             return String.valueOf(branchId);
@@ -149,7 +156,7 @@ public class ActionInterceptorHandler {
 
     /**
      * Init business context
-     *
+     * 初始化业务上下文
      * @param context        the context
      * @param method         the method
      * @param businessAction the business action
@@ -162,15 +169,18 @@ public class ActionInterceptorHandler {
         }
         if (businessAction != null) {
             //the phase two method name
+            //放入提交方法
             context.put(Constants.COMMIT_METHOD, businessAction.commitMethod());
+            //放入回滚方法
             context.put(Constants.ROLLBACK_METHOD, businessAction.rollbackMethod());
+            //放入操作名称
             context.put(Constants.ACTION_NAME, businessAction.name());
         }
     }
 
     /**
      * Extracting context data from parameters, add them to the context
-     *
+     * 从参数中提取数据并放入上下文
      * @param method    the method
      * @param arguments the arguments
      * @return map map
